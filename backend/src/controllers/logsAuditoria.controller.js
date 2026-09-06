@@ -15,7 +15,7 @@ const listarLogAuditoria = async (req, res) => {
 
         const { usuario, entidad, fechaDesde, fechaHasta } = req.body;
 
-        if (req.usuario.rol !== "admin") {
+        if (req.usuario.rol !== "administrador") {
             return res.status(403).json ({
                 codigo: 403,
                 estado: "Solo el usuario administrador tiene permisos",

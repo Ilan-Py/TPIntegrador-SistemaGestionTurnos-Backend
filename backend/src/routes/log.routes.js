@@ -4,6 +4,6 @@ const { verificarToken, verificarRol } = require("../middlewares/auth.middleware
 
 const router = Router();
 
-router.post("/listar", verificarToken, verificarRol("admin"), listarLogAuditoria);
+router.post("/listar", verificarToken, verificarRol("administrador"), listarLogAuditoria);
 
 module.exports = router;
