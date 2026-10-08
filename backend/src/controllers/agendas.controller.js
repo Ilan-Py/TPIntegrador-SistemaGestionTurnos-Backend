@@ -1,4 +1,5 @@
 const pool = require("../database/database");
+const { logDarAlta, logModificar, logDarBaja }   = require("./logsAuditoria.controller");
 
 const darAltaAgenda = async (req, res) => {
     try {
@@ -55,6 +56,14 @@ const darAltaAgenda = async (req, res) => {
             "INSERT INTO agenda(hora_entrada, hora_salida, fecha, id_medico, id_especialidad, id_sede) VALUES (?, ?, ?, ?, ?, ?)",
             [hora_entrada, hora_salida, fecha, id_medico, id_especialidad, id_sede]
         );
+
+        try {
+
+          await logDarAlta(req.usuario.id, "ALTA", "agenda", result.insertId, `Se dio de alta la agenda con id ${result.insertId}`);
+
+        } catch (error) {
+          console.error("Error al registrar el log de alta de auditoría: ", error);
+        }
 
         return res.status(201).json({
             codigo: 201, 
@@ -180,6 +189,14 @@ const actualizarAgenda = async (req, res) => {
       [hora_entrada, hora_salida, fecha, id_medico, id_especialidad, id_sede, id]
     );
 
+    try {
+
+      await logModificar(req.usuario.id, "MODIFICACION", "agenda", id, `Se modificó la agenda con id ${id}`);
+
+    } catch (error) {
+      console.error("Error al registrar el log de modificación de auditoría: ", error);
+    }
+
     return res.json({ 
       codigo: 200, 
       estado: "ok", 
@@ -207,6 +224,14 @@ const darDeBajaAgenda = async (req, res) => {
     }
 
     await pool.query("DELETE FROM agenda WHERE id = ?", [id]);
+
+    try {
+
+      await logDarBaja(req.usuario.id, "BAJA", "agenda", id, `Se dio de baja la agenda con id ${id}`);
+
+    } catch (error) {
+      console.error("Error al registrar el log de baja de auditoría: ", error);
+    }
 
     return res.json({ 
       codigo: 200, 

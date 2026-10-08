@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const jwt    = require("jsonwebtoken");
 const pool   = require("../database/database");
+const { logDarAlta }  = require("./logsAuditoria.controller");
 
 const obtenerCoberturas = async (req, res) => {
   try {
@@ -36,6 +37,12 @@ const registro = async (req, res) => {
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'paciente')`,
       [nombre, apellido, dni, email, hash, fecha_nacimiento, id_cobertura, telefono]
     );
+
+    try {
+      await logDarAlta(result.insertId, "ALTA", "usuario", result.insertId, `Registro de nuevo usuario: ${nombre} ${apellido}`);
+    } catch (error) {
+      console.error("Error al registrar el log de auditoría:", error);
+    }
 
     return res.status(201).json({ codigo: 201, estado: "ok", datos: { id: result.insertId } });
 

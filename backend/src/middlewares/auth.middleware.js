@@ -1,7 +1,11 @@
 const jwt = require("jsonwebtoken");
 
 const verificarToken = (req, res, next) => {
-  const token = req.headers.authorization;
+const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ codigo: 401, estado: "Token no proporcionado", datos: null });
+}
+const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : authHeader;
 
   if (!token) {
     return res.status(401).json({ codigo: 401, estado: "Token no proporcionado", datos: null });

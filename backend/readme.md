@@ -127,6 +127,18 @@ Servidor en `http://localhost:4000`
 | GET | /notificaciones | Notificaciones propias del usuario, de más reciente a más antigua | Token |
 | PATCH | /notificaciones/:id/leer | Marcar una notificación propia como leída | Token |
 
+### Semana 4 — Reportes y cierre
+
+| Método | Ruta | Descripción | Rol |
+|--------|------|-------------|-----|
+| POST | /reportesYEstadisticas | Turnos por especialidad en rango de fechas | administrador |
+| POST | /historial/:id | Registrar historial clínico de un turno atendido | medico |
+
+#### Cambios
+- `PATCH /turnos/bajaTurno/:id` — método cambiado de `DELETE` a `PATCH`
+- Colección Postman completa actualizada en `backend/postman/coleccion-completa.json`
+
+
 ### Formato de respuesta uniforme
 
 ```json

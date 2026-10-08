@@ -1,4 +1,5 @@
 const pool = require("../database/database");
+const { logDarAlta, logDarBaja }   = require("./logsAuditoria.controller");
 
 const formatearFecha = (fechaISO) => {
     const [anio, mes, dia] = fechaISO.split("-");
@@ -77,6 +78,12 @@ const darAltaTurno = async (req, res) => {
             [id_paciente, mensaje]
         );
 
+        try {
+            await logDarAlta(req.usuario.id, "ALTA", "turno", result.insertId, `Turno con ID ${result.insertId} creado para paciente ID ${id_paciente} con nota: ${nota.trim()}, fecha: ${fecha}, hora: ${hora}, cobertura ID: ${id_cobertura}, agenda ID: ${agenda.id}`);
+        } catch (logError) {
+            console.error("Error al registrar el log de alta:", logError);
+        }
+
         return res.status(201).json({
             codigo: 201,
             estado: "ok",
@@ -136,6 +143,18 @@ const darDeBajaTurno = async (req, res) => {
             "INSERT INTO notificacion (id_usuario, tipo, mensaje, leida) VALUES (?, 'turno_cancelado', ?, 0)",
             [turnoExiste[0].id_paciente, mensaje]
         );
+
+        try {
+            await logDarBaja(
+  req.usuario.id,
+  "BAJA",
+  "turno",
+  id,
+  `Turno con ID ${id} cancelado para paciente ID ${turnoExiste[0].id_paciente}, fecha: ${turnoExiste[0].fecha}, hora: ${turnoExiste[0].hora}`
+);
+        } catch (logError) {
+            console.error("Error al registrar el log de baja:", logError);
+        }
 
         return res.status(200).json({
             codigo: 200,

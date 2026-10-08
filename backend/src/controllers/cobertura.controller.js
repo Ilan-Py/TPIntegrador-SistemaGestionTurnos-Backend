@@ -1,4 +1,5 @@
 const pool = require("../database/database");
+const { logDarAlta, logModificar, logDarBaja }   = require("./logsAuditoria.controller");
 
 const listarCoberturas = async (req, res) => {
   try {
@@ -21,6 +22,12 @@ const darDeAlta = async (req, res) => {
       "INSERT INTO cobertura (nombre) VALUES (?)",
       [nombre]
     );
+
+    try {
+      await logDarAlta(req.usuario.id, "ALTA", "cobertura", result.insertId, `Cobertura con ID ${result.insertId} creada con nombre: ${nombre}`);
+    } catch (logError) {
+      console.error("Error al registrar el log de alta:", logError);
+    }
 
     return res.status(201).json({ codigo: 201, estado: "ok", datos: { id: result.insertId, nombre } });
 
@@ -47,6 +54,12 @@ const actualizarCobertura = async (req, res) => {
       "UPDATE cobertura SET nombre = ? WHERE id = ?",
       [nombre, id]
     );
+
+    try {
+      await logModificar(req.usuario.id, "MODIFICACION", "cobertura", id, `Cobertura con ID ${id} actualizada a nombre: ${nombre}`);
+    } catch (logError) {
+      console.error("Error al registrar el log de modificación:", logError);
+    }
 
     return res.json({ codigo: 200, estado: "ok", datos: { id, nombre } });
 
@@ -77,6 +90,12 @@ const darDeBaja = async (req, res) => {
     }
 
     await pool.query("DELETE FROM cobertura WHERE id = ?", [id]);
+
+    try {
+      await logDarBaja(req.usuario.id, "BAJA", "cobertura", id, `Cobertura con ID ${id} eliminada`);
+    } catch (logError) {
+      console.error("Error al registrar el log de baja:", logError);
+    }
 
     return res.json({ codigo: 200, estado: "ok", datos: { mensaje: "Cobertura eliminada correctamente" } });
 

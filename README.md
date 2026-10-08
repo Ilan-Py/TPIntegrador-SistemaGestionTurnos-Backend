@@ -36,6 +36,22 @@ Cada carpeta tiene su propio README con instrucciones específicas.
 
 ## Changelog
 
+### [Semana 4] — Backend: Reportes, documentación y cierre
+
+#### Agregado
+- Endpoint de reportes y estadísticas `POST /reportesYEstadisticas` — solo rol `administrador`
+  - Consulta de turnos por especialidad dentro de un rango de fechas
+  - Validación de formato de fechas, rango válido e id_especialidad
+  - Devuelve cantidad total y listado de turnos
+- Historial clínico separado como paso posterior a la atención
+  - `POST /historial/:id` — el médico registra diagnóstico, tratamiento y observaciones luego de atender el turno
+  - Validación de turno atendido, pertenencia al médico y no duplicación
+- Colección Postman completa con todos los endpoints y descripciones `backend/postman/coleccion-completa.json`
+
+#### Modificado
+- `PATCH /turnos/bajaTurno/:id` — método cambiado de `DELETE` a `PATCH` ya que la operación modifica el estado del turno a cancelado sin eliminar el registro
+
+
 ### [Semana 3] — Backend: Turnos, historial clínico y notificaciones
 #### Agregado
 - Endpoint de alta de turno para paciente (u operador en su representación)

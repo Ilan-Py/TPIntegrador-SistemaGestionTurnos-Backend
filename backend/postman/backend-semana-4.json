@@ -1,0 +1,1837 @@
+{
+  "info": {
+    "_postman_id": "8a40fe23-87ae-4c26-ab55-486ee5fc3d97",
+    "name": "TP Integrador - Backend Semana 4",
+    "description": "Colección completa de todos los endpoints del backend.\nBase URL: http://localhost:4000\n\nAntes de usar:\n1. Importar scripts/clinica_ampliada.sql en phpMyAdmin\n2. Importar scripts/usuarios_prueba.sql en phpMyAdmin\n3. Seleccionar el entorno clinica-local\n4. Hacer Login con el usuario correspondiente para cargar {{token}}\n\nUsuarios de prueba (contraseña: password123):\n- Administrador: DNI 00000001\n- Medico: DNI 00000002\n- Operador: DNI 00000003\n- Paciente: DNI 00000004",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "47962904",
+    "_collection_link": "https://go.postman.co/collection/47962904-8a40fe23-87ae-4c26-ab55-486ee5fc3d97?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "AUTH",
+      "item": [
+        {
+          "name": "Login Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.datos && res.datos.token) { pm.environment.set('token', res.datos.token); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dni\": \"00000001\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:4000/auth/login",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Iniciar sesión como administrador. Guarda el token en {{token}} automáticamente.\n\nRol requerido: público\nBody: dni, password\nRespuesta exitosa: 200 con token JWT\nRespuesta error: 401 si credenciales incorrectas"
+          },
+          "response": []
+        },
+        {
+          "name": "Login Medico",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.datos && res.datos.token) { pm.environment.set('token', res.datos.token); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dni\": \"00000002\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:4000/auth/login",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Iniciar sesión como médico.\n\nRol requerido: público\nBody: dni, password\nRespuesta exitosa: 200 con token JWT"
+          },
+          "response": []
+        },
+        {
+          "name": "Login Operador",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.datos && res.datos.token) { pm.environment.set('token', res.datos.token); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dni\": \"00000003\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:4000/auth/login",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Iniciar sesión como operador.\n\nRol requerido: público\nBody: dni, password\nRespuesta exitosa: 200 con token JWT"
+          },
+          "response": []
+        },
+        {
+          "name": "Login Paciente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.datos && res.datos.token) { pm.environment.set('token', res.datos.token); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dni\": \"00000004\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:4000/auth/login",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Iniciar sesión como paciente.\n\nRol requerido: público\nBody: dni, password\nRespuesta exitosa: 200 con token JWT"
+          },
+          "response": []
+        },
+        {
+          "name": "Registro paciente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Maria\",\n  \"apellido\": \"Garcia\",\n  \"dni\": \"99999999\",\n  \"email\": \"maria@gmail.com\",\n  \"password\": \"password123\",\n  \"fecha_nacimiento\": \"2000-05-20\",\n  \"id_cobertura\": 1,\n  \"telefono\": \"3424999999\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:4000/auth/registro",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "auth",
+                "registro"
+              ]
+            },
+            "description": "Registra un nuevo usuario con rol paciente. Valida DNI y email únicos. Contraseña hasheada con bcrypt.\n\nRol requerido: público\nBody: nombre, apellido, dni, email, password, fecha_nacimiento, id_cobertura, telefono\nRespuesta exitosa: 201 con id del nuevo usuario\nRespuesta error: 400 si falta algún campo o DNI/email duplicado"
+          },
+          "response": []
+        },
+        {
+          "name": "Perfil usuario logueado",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/auth/perfil",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "auth",
+                "perfil"
+              ]
+            },
+            "description": "Devuelve datos completos del usuario autenticado incluyendo sede y cobertura.\n\nRol requerido: cualquier usuario autenticado\nRespuesta exitosa: 200 con datos del usuario\nRespuesta error: 401 sin token"
+          },
+          "response": []
+        },
+        {
+          "name": "Coberturas disponibles (público)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:4000/auth/coberturas",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "auth",
+                "coberturas"
+              ]
+            },
+            "description": "Lista todas las coberturas sin autenticación. Usado durante el registro de pacientes.\n\nRol requerido: público\nRespuesta exitosa: 200 con array de coberturas"
+          },
+          "response": []
+        }
+      ],
+      "description": "Endpoints de autenticación y registro."
+    },
+    {
+      "name": "SEDES",
+      "item": [
+        {
+          "name": "Listar sedes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/sedes",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "sedes"
+              ]
+            },
+            "description": "Devuelve todas las sedes.\n\nRol requerido: administrador\nRespuesta exitosa: 200 con array de sedes\nRespuesta error: 401 sin token, 403 sin rol administrador"
+          },
+          "response": []
+        },
+        {
+          "name": "Crear sede",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Sede Sur\",\n  \"direccion\": \"Av. Sur 789\",\n  \"telefono\": \"3424000003\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:4000/sedes",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "sedes"
+              ]
+            },
+            "description": "Crea una nueva sede.\n\nRol requerido: administrador\nBody: nombre, direccion, telefono\nRespuesta exitosa: 201\nRespuesta error: 400 si falta algún campo"
+          },
+          "response": []
+        },
+        {
+          "name": "Modificar sede",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Sede Sur Actualizada\",\n  \"direccion\": \"Av. Sur 999\",\n  \"telefono\": \"3424000099\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:4000/sedes/3",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "sedes",
+                "3"
+              ]
+            },
+            "description": "Modifica una sede por ID.\n\nRol requerido: administrador\nParams: id en la URL\nBody: nombre, direccion, telefono\nRespuesta exitosa: 200\nRespuesta error: 404 si no existe"
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar sede (sin dependencias)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/sedes/3",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "sedes",
+                "3"
+              ]
+            },
+            "description": "Elimina una sede. Falla con 400 si tiene usuarios o agenda asociada.\n\nRol requerido: administrador\nParams: id en la URL"
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar sede con dependencias (espera 400)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/sedes/1",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "sedes",
+                "1"
+              ]
+            },
+            "description": "Intento de eliminar una sede con usuarios o agenda. Debe devolver 400 controlado.\n\nRol requerido: administrador"
+          },
+          "response": []
+        }
+      ],
+      "description": "CRUD completo de sedes. Solo administrador. Antes de eliminar valida dependencias."
+    },
+    {
+      "name": "ESPECIALIDADES",
+      "item": [
+        {
+          "name": "Listar especialidades",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/especialidades",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "especialidades"
+              ]
+            },
+            "description": "Devuelve todas las especialidades.\n\nRol requerido: administrador\nRespuesta exitosa: 200 con array"
+          },
+          "response": []
+        },
+        {
+          "name": "Crear especialidad",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descripcion\": \"Cardiologia\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:4000/especialidades",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "especialidades"
+              ]
+            },
+            "description": "Crea una nueva especialidad.\n\nRol requerido: administrador\nBody: descripcion\nRespuesta exitosa: 201"
+          },
+          "response": []
+        },
+        {
+          "name": "Modificar especialidad",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descripcion\": \"Cardiologia Actualizada\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:4000/especialidades/2",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "especialidades",
+                "2"
+              ]
+            },
+            "description": "Modifica una especialidad por ID.\n\nRol requerido: administrador\nParams: id en la URL\nBody: descripcion"
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar especialidad (sin dependencias)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/especialidades/2",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "especialidades",
+                "2"
+              ]
+            },
+            "description": "Elimina una especialidad. Falla con 400 si tiene médicos asociados.\n\nRol requerido: administrador\nParams: id en la URL"
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar especialidad con medicos (espera 400)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/especialidades/1",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "especialidades",
+                "1"
+              ]
+            },
+            "description": "Intento de eliminar especialidad con médicos. Debe devolver 400.\n\nRol requerido: administrador"
+          },
+          "response": []
+        }
+      ],
+      "description": "CRUD completo de especialidades. Solo administrador. Antes de eliminar valida médicos asociados."
+    },
+    {
+      "name": "COBERTURAS",
+      "item": [
+        {
+          "name": "Listar coberturas (público)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "localhost:4000/coberturas/public",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "coberturas",
+                "public"
+              ]
+            },
+            "description": "Lista coberturas sin autenticación. Usado en el registro de pacientes.\n\nRol requerido: público"
+          },
+          "response": []
+        },
+        {
+          "name": "Listar coberturas (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/coberturas",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "coberturas"
+              ]
+            },
+            "description": "Lista coberturas con autenticación.\n\nRol requerido: administrador"
+          },
+          "response": []
+        },
+        {
+          "name": "Crear cobertura",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"OSDE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:4000/coberturas",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "coberturas"
+              ]
+            },
+            "description": "Crea una nueva cobertura.\n\nRol requerido: administrador\nBody: nombre\nRespuesta exitosa: 201"
+          },
+          "response": []
+        },
+        {
+          "name": "Modificar cobertura",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"OSDE Actualizado\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:4000/coberturas/2",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "coberturas",
+                "2"
+              ]
+            },
+            "description": "Modifica una cobertura por ID.\n\nRol requerido: administrador\nParams: id en la URL\nBody: nombre"
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar cobertura (sin usuarios)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/coberturas/2",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "coberturas",
+                "2"
+              ]
+            },
+            "description": "Elimina una cobertura. Falla con 400 si tiene usuarios asociados.\n\nRol requerido: administrador\nParams: id en la URL"
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar cobertura con usuarios (espera 400)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/coberturas/1",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "coberturas",
+                "1"
+              ]
+            },
+            "description": "Intento de eliminar cobertura con usuarios. Debe devolver 400.\n\nRol requerido: administrador"
+          },
+          "response": []
+        }
+      ],
+      "description": "CRUD completo de coberturas. Solo administrador, excepto el endpoint público para registro."
+    },
+    {
+      "name": "AGENDAS",
+      "item": [
+        {
+          "name": "Listar agendas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/agendas",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "agendas"
+              ]
+            },
+            "description": "Lista agenda. Filtrable por id_medico, id_sede y fecha.\n\nRol requerido: medico, operador, administrador\nQuery params opcionales: id_medico, id_sede, fecha"
+          },
+          "response": []
+        },
+        {
+          "name": "Listar agendas filtrada",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/agendas?id_medico=3&fecha=2025-10-20",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "agendas"
+              ],
+              "query": [
+                {
+                  "key": "id_medico",
+                  "value": "3"
+                },
+                {
+                  "key": "fecha",
+                  "value": "2025-10-20"
+                }
+              ]
+            },
+            "description": "Lista agenda filtrando por médico y fecha.\n\nRol requerido: medico, operador, administrador"
+          },
+          "response": []
+        },
+        {
+          "name": "Crear turno de agenda",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"hora_entrada\": \"09:00\",\n  \"hora_salida\": \"13:00\",\n  \"fecha\": \"2025-11-15\",\n  \"id_medico\": 3,\n  \"id_especialidad\": 1,\n  \"id_sede\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:4000/agendas",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "agendas"
+              ]
+            },
+            "description": "Crea un turno en la agenda. El médico solo puede crear la propia.\n\nRol requerido: medico, operador, administrador\nBody: hora_entrada, hora_salida, fecha, id_medico, id_especialidad, id_sede"
+          },
+          "response": []
+        },
+        {
+          "name": "Modificar turno de agenda",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"hora_entrada\": \"10:00\",\n  \"hora_salida\": \"14:00\",\n  \"fecha\": \"2025-11-15\",\n  \"id_medico\": 3,\n  \"id_especialidad\": 1,\n  \"id_sede\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:4000/agendas/3",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "agendas",
+                "3"
+              ]
+            },
+            "description": "Modifica un turno de agenda por ID.\n\nRol requerido: medico, operador, administrador\nParams: id en la URL"
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar turno de agenda",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/agendas/3",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "agendas",
+                "3"
+              ]
+            },
+            "description": "Elimina un turno de agenda por ID.\n\nRol requerido: medico, operador, administrador\nParams: id en la URL"
+          },
+          "response": []
+        }
+      ],
+      "description": "CRUD de agenda médica. Médico solo gestiona la propia. Paciente sin acceso."
+    },
+    {
+      "name": "TURNOS",
+      "item": [
+        {
+          "name": "Alta de turno (paciente)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_medico\": 3,\n  \"id_especialidad\": 1,\n  \"id_sede\": 1,\n  \"fecha\": \"2025-10-20\",\n  \"hora\": \"15:00\",\n  \"nota\": \"Consulta de control\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:4000/turnos/altaTurno",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "turnos",
+                "altaTurno"
+              ]
+            },
+            "description": "Solicita un turno. Valida horario en agenda y disponibilidad. Cobertura tomada automáticamente del paciente. Genera notificación turno_confirmado.\n\nRol requerido: paciente, operador\nBody: id_medico, id_especialidad, id_sede, fecha, hora, nota (obligatoria). Operador agrega id_paciente.\nRespuesta exitosa: 201\nRespuesta error: 400 si hora fuera de agenda u ocupada, 404 si no hay agenda"
+          },
+          "response": []
+        },
+        {
+          "name": "Alta de turno fuera de horario (espera 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_medico\": 3,\n  \"id_especialidad\": 1,\n  \"id_sede\": 1,\n  \"fecha\": \"2025-10-20\",\n  \"hora\": \"08:00\",\n  \"nota\": \"Fuera de horario\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:4000/turnos/altaTurno",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "turnos",
+                "altaTurno"
+              ]
+            },
+            "description": "Intento de crear turno fuera del horario de agenda. Debe devolver 400.\n\nRol requerido: paciente, operador"
+          },
+          "response": []
+        },
+        {
+          "name": "Alta de turno por operador",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_medico\": 3,\n  \"id_especialidad\": 1,\n  \"id_sede\": 1,\n  \"fecha\": \"2025-10-20\",\n  \"hora\": \"16:00\",\n  \"id_paciente\": 4,\n  \"nota\": \"Turno cargado por operador\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:4000/turnos/altaTurno",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "turnos",
+                "altaTurno"
+              ]
+            },
+            "description": "El operador crea un turno por un paciente. Debe indicar id_paciente.\n\nRol requerido: operador\nBody: id_medico, id_especialidad, id_sede, fecha, hora, nota, id_paciente"
+          },
+          "response": []
+        },
+        {
+          "name": "Mis turnos (paciente)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/turnos/mis-turnos",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "turnos",
+                "mis-turnos"
+              ]
+            },
+            "description": "Lista los turnos del paciente autenticado ordenados por fecha y hora ascendente.\n\nRol requerido: paciente\nRespuesta exitosa: 200 con array de turnos"
+          },
+          "response": []
+        },
+        {
+          "name": "Turnos medico por fecha",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/turnos/medico?fecha=2025-10-20",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "turnos",
+                "medico"
+              ],
+              "query": [
+                {
+                  "key": "fecha",
+                  "value": "2025-10-20"
+                }
+              ]
+            },
+            "description": "Lista los turnos del médico autenticado para una fecha.\n\nRol requerido: medico\nQuery params: fecha (requerido, YYYY-MM-DD)"
+          },
+          "response": []
+        },
+        {
+          "name": "Turnos sede por fecha (operador)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/turnos/sede?fecha=2025-10-20",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "turnos",
+                "sede"
+              ],
+              "query": [
+                {
+                  "key": "fecha",
+                  "value": "2025-10-20"
+                }
+              ]
+            },
+            "description": "Lista los turnos de la sede del operador para una fecha.\n\nRol requerido: operador, administrador\nQuery params: fecha (requerido, YYYY-MM-DD)"
+          },
+          "response": []
+        },
+        {
+          "name": "Cancelar turno",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/turnos/bajaTurno/1",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "turnos",
+                "bajaTurno",
+                "1"
+              ]
+            },
+            "description": "Cancela un turno confirmado cambiando su estado. Paciente cancela los suyos. Operador/médico solo de su sede. Genera notificación turno_cancelado.\n\nRol requerido: paciente, operador, medico\nParams: id en la URL\nRespuesta exitosa: 200\nRespuesta error: 403 si turno ajeno o de otra sede, 404 si no existe o no está confirmado"
+          },
+          "response": []
+        },
+        {
+          "name": "Cancelar turno de otra sede (espera 403)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/turnos/bajaTurno/2",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "turnos",
+                "bajaTurno",
+                "2"
+              ]
+            },
+            "description": "Intento de cancelar turno de otra sede. Debe devolver 403.\n\nRol requerido: operador, medico"
+          },
+          "response": []
+        },
+        {
+          "name": "Atender turno (medico)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/turnos/2/atender",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "turnos",
+                "2",
+                "atender"
+              ]
+            },
+            "description": "Marca el turno como atendido. Solo el médico del turno. Genera notificación turno_atendido. El historial se registra como paso posterior en POST /historial/:id.\n\nRol requerido: medico\nParams: id en la URL\nRespuesta exitosa: 200\nRespuesta error: 403 si turno de otro médico, 404 si no existe o no está confirmado"
+          },
+          "response": []
+        },
+        {
+          "name": "Atender turno de otro medico (espera 403)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/turnos/1/atender",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "turnos",
+                "1",
+                "atender"
+              ]
+            },
+            "description": "Intento de atender turno de otro médico. Debe devolver 403.\n\nRol requerido: medico"
+          },
+          "response": []
+        }
+      ],
+      "description": "Gestión de turnos de pacientes.\nFlujo: Login Paciente → Alta → Login Medico → Atender → Registrar historial → Login Paciente → Ver notificaciones"
+    },
+    {
+      "name": "HISTORIAL CLINICO",
+      "item": [
+        {
+          "name": "Registrar historial (medico)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"diagnostico\": \"Esguince de tobillo grado I\",\n  \"tratamiento\": \"Reposo y antiinflamatorios\",\n  \"observaciones\": \"Control en 15 dias\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:4000/historial/2",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "historial",
+                "2"
+              ]
+            },
+            "description": "Registra historial de un turno atendido. El turno debe estar en estado 'atendido' y pertenecer al médico. No permite duplicados.\n\nRol requerido: medico\nParams: id del turno en la URL\nBody: diagnostico (requerido), tratamiento, observaciones\nRespuesta exitosa: 201\nRespuesta error: 400 si falta diagnóstico o ya existe historial, 403 si el turno no le pertenece, 404 si turno no existe o no está atendido"
+          },
+          "response": []
+        },
+        {
+          "name": "Registrar historial turno no atendido (espera 404)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"diagnostico\": \"Prueba\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:4000/historial/1",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "historial",
+                "1"
+              ]
+            },
+            "description": "Intento de registrar historial en turno no atendido. Debe devolver 404.\n\nRol requerido: medico"
+          },
+          "response": []
+        },
+        {
+          "name": "Ver historial propio (paciente)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/historial/4",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "historial",
+                "4"
+              ]
+            },
+            "description": "El paciente consulta su historial completo con todos los médicos y especialidades.\n\nRol requerido: paciente\nParams: id_paciente en la URL (debe coincidir con el id del paciente autenticado)\nRespuesta exitosa: 200\nRespuesta error: 403 si intenta ver historial de otro paciente"
+          },
+          "response": []
+        },
+        {
+          "name": "Ver historial de otro paciente (espera 403)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/historial/1",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "historial",
+                "1"
+              ]
+            },
+            "description": "Intento de ver historial de otro paciente. Debe devolver 403.\n\nRol requerido: paciente"
+          },
+          "response": []
+        },
+        {
+          "name": "Ver historial paciente (medico)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/historial/4",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "historial",
+                "4"
+              ]
+            },
+            "description": "El médico consulta historial de un paciente, solo ve los turnos que él atendió.\n\nRol requerido: medico\nParams: id_paciente en la URL"
+          },
+          "response": []
+        }
+      ],
+      "description": "Registro y consulta del historial clínico.\nFlujo: atender turno → registrar historial → consultar historial."
+    },
+    {
+      "name": "NOTIFICACIONES",
+      "item": [
+        {
+          "name": "Listar mis notificaciones",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/notificaciones",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "notificaciones"
+              ]
+            },
+            "description": "Lista notificaciones del usuario autenticado, de más reciente a más antigua.\n\nRol requerido: cualquier usuario autenticado\nRespuesta exitosa: 200 con array de notificaciones"
+          },
+          "response": []
+        },
+        {
+          "name": "Marcar notificacion como leida",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/notificaciones/1/leer",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "notificaciones",
+                "1",
+                "leer"
+              ]
+            },
+            "description": "Marca una notificación como leída. Solo el dueño puede hacerlo.\n\nRol requerido: cualquier usuario autenticado\nParams: id en la URL\nRespuesta exitosa: 200\nRespuesta error: 403 si es de otro usuario, 404 si no existe"
+          },
+          "response": []
+        },
+        {
+          "name": "Marcar notificacion de otro usuario (espera 403)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/notificaciones/2/leer",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "notificaciones",
+                "2",
+                "leer"
+              ]
+            },
+            "description": "Intento de marcar notificación de otro usuario. Debe devolver 403.\n\nRol requerido: cualquier usuario autenticado"
+          },
+          "response": []
+        }
+      ],
+      "description": "Generadas automáticamente en tres eventos: turno_confirmado, turno_cancelado, turno_atendido."
+    },
+    {
+      "name": "REPORTES Y ESTADISTICAS",
+      "item": [
+        {
+          "name": "Turnos por especialidad",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"desde\": \"2025-01-01\",\n  \"hasta\": \"2025-12-31\",\n  \"id_especialidad\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:4000/reportesYEstadisticas",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "reportesYEstadisticas"
+              ]
+            },
+            "description": "Devuelve los turnos de una especialidad dentro de un rango de fechas, con la cantidad total. Valida que las fechas sean válidas y que la primera no sea mayor que la segunda.\n\nRol requerido: administrador (verificado en el controller)\nBody: desde (YYYY-MM-DD), hasta (YYYY-MM-DD), id_especialidad\nRespuesta exitosa: 200 con cantidad y listado de turnos\nRespuesta error: 400 si fechas inválidas o id_especialidad inválido, 403 si no es administrador, 404 si no hay turnos en ese rango"
+          },
+          "response": []
+        },
+        {
+          "name": "Turnos por especialidad fecha invalida (espera 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"desde\": \"2025-12-31\",\n  \"hasta\": \"2025-01-01\",\n  \"id_especialidad\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:4000/reportesYEstadisticas",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "reportesYEstadisticas"
+              ]
+            },
+            "description": "Intento con fecha desde mayor que hasta. Debe devolver 400.\n\nRol requerido: administrador"
+          },
+          "response": []
+        },
+        {
+          "name": "Turnos por especialidad sin ser admin (espera 403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"desde\": \"2025-01-01\",\n  \"hasta\": \"2025-12-31\",\n  \"id_especialidad\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:4000/reportesYEstadisticas",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "reportesYEstadisticas"
+              ]
+            },
+            "description": "Intento de acceder a reportes sin rol administrador. Debe devolver 403.\n\nRol requerido: administrador"
+          },
+          "response": []
+        },
+        {
+          "name": "Turnos por sede",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"desde\": \"2025-01-01\",\n  \"hasta\": \"2025-12-31\",\n  \"id_sede\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:4000/reportesYEstadisticas/sede",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "reportesYEstadisticas",
+                "sede"
+              ]
+            },
+            "description": "Turnos de una sede en rango de fechas.\n\nRol: administrador\nBody: desde, hasta, id_sede\nRespuesta exitosa: 200\nError: 400 fechas inválidas, 403 no admin, 404 sin turnos"
+          },
+          "response": []
+        },
+        {
+          "name": "Ranking medicos por turnos atendidos",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"desde\": \"2025-01-01\",\n  \"hasta\": \"2025-12-31\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:4000/reportesYEstadisticas/ranking-medicos",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "reportesYEstadisticas",
+                "ranking-medicos"
+              ]
+            },
+            "description": "Ranking de médicos ordenado por cantidad de turnos atendidos en el período. Solo acepta fechas pasadas.\n\nRol: administrador\nBody: desde, hasta\nRespuesta exitosa: 200 con ranking ordenado descendente\nError: 400 fechas futuras o inválidas, 403 no admin, 404 sin médicos"
+          },
+          "response": []
+        },
+        {
+          "name": "Tasa de cancelacion",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"desde\": \"2025-01-01\",\n  \"hasta\": \"2025-12-31\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:4000/reportesYEstadisticas/tasa-cancelacion",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "reportesYEstadisticas",
+                "tasa-cancelacion"
+              ]
+            },
+            "description": "Tasa de cancelación de turnos en el período. Devuelve total cancelados, efectivos, total general y porcentaje.\n\nRol: administrador\nBody: desde, hasta\nRespuesta exitosa: 200 con estadísticas\nError: 400 fechas futuras o inválidas, 403 no admin, 404 sin turnos"
+          },
+          "response": []
+        }
+      ],
+      "description": "Reportes para el administrador. Consulta de turnos filtrados por especialidad y rango de fechas."
+    },
+    {
+      "name": "AUDITORIA",
+      "item": [
+        {
+          "name": "Listar logs de auditoria (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fechaDesde\": \"2025-01-01\",\n  \"fechaHasta\": \"2025-12-31\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:4000/log/listar",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "log",
+                "listar"
+              ]
+            },
+            "description": "Lista los logs de auditoría filtrables por usuario, entidad y rango de fechas. Todos los filtros son opcionales.\n\nRol: administrador\nBody: usuario (opcional), entidad (opcional), fechaDesde (opcional), fechaHasta (opcional)\nRespuesta exitosa: 200 con array de logs\nError: 403 no admin, 404 sin logs"
+          },
+          "response": []
+        },
+        {
+          "name": "Listar logs filtrado por entidad",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"entidad\": \"turno\",\n  \"fechaDesde\": \"2025-01-01\",\n  \"fechaHasta\": \"2025-12-31\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:4000/log/listar",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "log",
+                "listar"
+              ]
+            },
+            "description": "Lista logs filtrando por entidad específica.\n\nRol: administrador\nEntidades posibles: turno, sede, especialidad, cobertura, agenda, usuario"
+          },
+          "response": []
+        },
+        {
+          "name": "Listar logs sin ser admin (espera 403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fechaDesde\": \"2025-01-01\",\n  \"fechaHasta\": \"2025-12-31\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:4000/log/listar",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "log",
+                "listar"
+              ]
+            },
+            "description": "Intento de acceder a logs sin rol administrador. Debe devolver 403.\n\nRol: cualquier otro rol"
+          },
+          "response": []
+        }
+      ],
+      "description": "Consulta del log de auditoría. Los registros se generan automáticamente al crear, modificar o eliminar sedes, especialidades, coberturas, agendas, turnos y usuarios."
+    }
+  ],
+  "variable": [
+    {
+      "key": "token",
+      "value": ""
+    }
+  ]
+}

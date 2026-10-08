@@ -1,4 +1,5 @@
 const pool   = require("../database/database");
+const { logDarAlta, logModificar, logDarBaja }   = require("./logsAuditoria.controller");
 
 const listarSedes = async (req, res) => {
  try {
@@ -28,6 +29,12 @@ const actualizarSede = async (req, res) => {
       [nombre, direccion, telefono, id]
     );
 
+    try {
+      await logModificar(req.usuario.id, "MODIFICACION", "sede", id, `Sede con ID ${id} actualizada a nombre: ${nombre}, dirección: ${direccion}, teléfono: ${telefono}`);
+    } catch (logError) {
+      console.error("Error al registrar el log de modificación:", logError);
+    }
+
     return res.json({ codigo: 200, estado: "ok", datos: { id, nombre, direccion, telefono } });
 
   } catch (error) {
@@ -47,6 +54,12 @@ const darDeAlta = async (req, res) => {
       "INSERT INTO sede (nombre, direccion, telefono) VALUES (?, ?, ?)",
       [nombre, direccion, telefono]
     );
+
+    try {
+      await logDarAlta(req.usuario.id, "ALTA", "sede", result.insertId, `Sede con ID ${result.insertId} creada con nombre: ${nombre}, dirección: ${direccion}, teléfono: ${telefono}`);
+    } catch (logError) {
+      console.error("Error al registrar el log de alta:", logError);
+    }
 
     return res.status(201).json({ codigo: 201, estado: "ok", datos: { id: result.insertId, nombre, direccion, telefono } });
 
@@ -89,6 +102,12 @@ const darDeBaja = async (req, res) => {
     }
 
     await pool.query("DELETE FROM sede WHERE id = ?", [id]);
+
+    try {
+      await logDarBaja(req.usuario.id, "BAJA", "sede", id, `Sede con ID ${id} eliminada`);
+    } catch (logError) {
+      console.error("Error al registrar el log de baja:", logError);
+    }
 
     return res.json({ codigo: 200, estado: "ok", datos: { mensaje: "Sede eliminada correctamente" } });
 
