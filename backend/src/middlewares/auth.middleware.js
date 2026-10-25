@@ -1,13 +1,14 @@
 const jwt = require("jsonwebtoken");
 
 const verificarToken = (req, res, next) => {
-  const token = req.headers.authorization;
+  const authorization = req.headers.authorization;
 
-  if (!token) {
+  if (!authorization) {
     return res.status(401).json({ codigo: 401, estado: "Token no proporcionado", datos: null });
   }
 
   try {
+    const token = authorization.replace(/^Bearer\s+/i, "");
     const payload = jwt.verify(token, process.env.JWT_SECRET);
     req.usuario   = payload;
     next();
@@ -18,7 +19,11 @@ const verificarToken = (req, res, next) => {
 
 const verificarRol = (...rolesPermitidos) => {
   return (req, res, next) => {
-    if (!rolesPermitidos.includes(req.usuario.rol)) {
+    const normalizarRol = (rol) => rol === "admin" ? "administrador" : rol;
+    const rolUsuario = normalizarRol(req.usuario.rol);
+    const tienePermiso = rolesPermitidos.some(rol => normalizarRol(rol) === rolUsuario);
+
+    if (!tienePermiso) {
       return res.status(403).json({ codigo: 403, estado: "No tenés permisos para acceder a este recurso", datos: null });
     }
     next();
