@@ -1,16 +1,15 @@
 const jwt = require("jsonwebtoken");
 
 const verificarToken = (req, res, next) => {
-  const authorization = req.headers.authorization;
-
-  if (!authorization) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
     return res.status(401).json({ codigo: 401, estado: "Token no proporcionado", datos: null });
   }
+  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : authHeader;
 
   try {
-    const token = authorization.replace(/^Bearer\s+/i, "");
     const payload = jwt.verify(token, process.env.JWT_SECRET);
-    req.usuario   = payload;
+    req.usuario = payload;
     next();
   } catch (error) {
     return res.status(401).json({ codigo: 401, estado: "Token inválido o expirado", datos: null });

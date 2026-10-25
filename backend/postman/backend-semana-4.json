@@ -1,11 +1,11 @@
 {
   "info": {
-    "_postman_id": "96875946-e4d6-41f8-9c20-be9cb6df3ea3",
+    "_postman_id": "8a40fe23-87ae-4c26-ab55-486ee5fc3d97",
     "name": "TP Integrador - Backend Semana 4",
     "description": "Colección completa de todos los endpoints del backend.\nBase URL: http://localhost:4000\n\nAntes de usar:\n1. Importar scripts/clinica_ampliada.sql en phpMyAdmin\n2. Importar scripts/usuarios_prueba.sql en phpMyAdmin\n3. Seleccionar el entorno clinica-local\n4. Hacer Login con el usuario correspondiente para cargar {{token}}\n\nUsuarios de prueba (contraseña: password123):\n- Administrador: DNI 00000001\n- Medico: DNI 00000002\n- Operador: DNI 00000003\n- Paciente: DNI 00000004",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "47962904",
-    "_collection_link": "https://go.postman.co/collection/47962904-96875946-e4d6-41f8-9c20-be9cb6df3ea3?source=collection_link"
+    "_collection_link": "https://go.postman.co/collection/47962904-8a40fe23-87ae-4c26-ab55-486ee5fc3d97?source=collection_link"
   },
   "item": [
     {
@@ -1589,9 +1589,243 @@
             "description": "Intento de acceder a reportes sin rol administrador. Debe devolver 403.\n\nRol requerido: administrador"
           },
           "response": []
+        },
+        {
+          "name": "Turnos por sede",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"desde\": \"2025-01-01\",\n  \"hasta\": \"2025-12-31\",\n  \"id_sede\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:4000/reportesYEstadisticas/sede",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "reportesYEstadisticas",
+                "sede"
+              ]
+            },
+            "description": "Turnos de una sede en rango de fechas.\n\nRol: administrador\nBody: desde, hasta, id_sede\nRespuesta exitosa: 200\nError: 400 fechas inválidas, 403 no admin, 404 sin turnos"
+          },
+          "response": []
+        },
+        {
+          "name": "Ranking medicos por turnos atendidos",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"desde\": \"2025-01-01\",\n  \"hasta\": \"2025-12-31\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:4000/reportesYEstadisticas/ranking-medicos",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "reportesYEstadisticas",
+                "ranking-medicos"
+              ]
+            },
+            "description": "Ranking de médicos ordenado por cantidad de turnos atendidos en el período. Solo acepta fechas pasadas.\n\nRol: administrador\nBody: desde, hasta\nRespuesta exitosa: 200 con ranking ordenado descendente\nError: 400 fechas futuras o inválidas, 403 no admin, 404 sin médicos"
+          },
+          "response": []
+        },
+        {
+          "name": "Tasa de cancelacion",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"desde\": \"2025-01-01\",\n  \"hasta\": \"2025-12-31\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:4000/reportesYEstadisticas/tasa-cancelacion",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "reportesYEstadisticas",
+                "tasa-cancelacion"
+              ]
+            },
+            "description": "Tasa de cancelación de turnos en el período. Devuelve total cancelados, efectivos, total general y porcentaje.\n\nRol: administrador\nBody: desde, hasta\nRespuesta exitosa: 200 con estadísticas\nError: 400 fechas futuras o inválidas, 403 no admin, 404 sin turnos"
+          },
+          "response": []
         }
       ],
       "description": "Reportes para el administrador. Consulta de turnos filtrados por especialidad y rango de fechas."
+    },
+    {
+      "name": "AUDITORIA",
+      "item": [
+        {
+          "name": "Listar logs de auditoria (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fechaDesde\": \"2025-01-01\",\n  \"fechaHasta\": \"2025-12-31\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:4000/log/listar",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "log",
+                "listar"
+              ]
+            },
+            "description": "Lista los logs de auditoría filtrables por usuario, entidad y rango de fechas. Todos los filtros son opcionales.\n\nRol: administrador\nBody: usuario (opcional), entidad (opcional), fechaDesde (opcional), fechaHasta (opcional)\nRespuesta exitosa: 200 con array de logs\nError: 403 no admin, 404 sin logs"
+          },
+          "response": []
+        },
+        {
+          "name": "Listar logs filtrado por entidad",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"entidad\": \"turno\",\n  \"fechaDesde\": \"2025-01-01\",\n  \"fechaHasta\": \"2025-12-31\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:4000/log/listar",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "log",
+                "listar"
+              ]
+            },
+            "description": "Lista logs filtrando por entidad específica.\n\nRol: administrador\nEntidades posibles: turno, sede, especialidad, cobertura, agenda, usuario"
+          },
+          "response": []
+        },
+        {
+          "name": "Listar logs sin ser admin (espera 403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fechaDesde\": \"2025-01-01\",\n  \"fechaHasta\": \"2025-12-31\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "localhost:4000/log/listar",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "log",
+                "listar"
+              ]
+            },
+            "description": "Intento de acceder a logs sin rol administrador. Debe devolver 403.\n\nRol: cualquier otro rol"
+          },
+          "response": []
+        }
+      ],
+      "description": "Consulta del log de auditoría. Los registros se generan automáticamente al crear, modificar o eliminar sedes, especialidades, coberturas, agendas, turnos y usuarios."
     }
   ],
   "variable": [
