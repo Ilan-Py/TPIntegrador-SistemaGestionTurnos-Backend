@@ -5,6 +5,7 @@ const morgan = require("morgan");
 const cors = require("cors");
 
 const authRoutes = require("./routes/auth.routes");
+const usuarioRoutes = require("./routes/usuario.routes");
 const sedeRoutes = require("./routes/sede.routes");
 const coberturaRoutes = require("./routes/cobertura.routes");
 const agendaRoutes = require("./routes/agendas.routes");
@@ -24,6 +25,7 @@ app.use(morgan("dev"));
 app.use(express.json());
 
 app.use("/auth", authRoutes);
+app.use("/usuarios", usuarioRoutes);
 app.use("/sedes", sedeRoutes);
 app.use("/coberturas", coberturaRoutes);
 app.use("/agendas", agendaRoutes);
