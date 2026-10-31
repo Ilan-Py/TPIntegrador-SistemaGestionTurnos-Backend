@@ -1,19 +1,15 @@
 const jwt = require("jsonwebtoken");
 
 const verificarToken = (req, res, next) => {
-const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      return res.status(401).json({ codigo: 401, estado: "Token no proporcionado", datos: null });
-}
-const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : authHeader;
-
-  if (!token) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
     return res.status(401).json({ codigo: 401, estado: "Token no proporcionado", datos: null });
   }
+  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : authHeader;
 
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
-    req.usuario   = payload;
+    req.usuario = payload;
     next();
   } catch (error) {
     return res.status(401).json({ codigo: 401, estado: "Token inválido o expirado", datos: null });
@@ -22,7 +18,11 @@ const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : authHeade
 
 const verificarRol = (...rolesPermitidos) => {
   return (req, res, next) => {
-    if (!rolesPermitidos.includes(req.usuario.rol)) {
+    const normalizarRol = (rol) => rol === "admin" ? "administrador" : rol;
+    const rolUsuario = normalizarRol(req.usuario.rol);
+    const tienePermiso = rolesPermitidos.some(rol => normalizarRol(rol) === rolUsuario);
+
+    if (!tienePermiso) {
       return res.status(403).json({ codigo: 403, estado: "No tenés permisos para acceder a este recurso", datos: null });
     }
     next();
