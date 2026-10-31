@@ -1,7 +1,13 @@
 const pool = require("../database/database");
 
+// Interpreta "YYYY-MM-DD" como fecha local. new Date("YYYY-MM-DD") la toma en UTC y,
+// en Argentina (UTC-3), al pasarla a texto quedaba un día antes: el rango se corría un día.
 const formatearFecha = (fechas) => {
-    const fecha = new Date(fechas);
+    if (typeof fechas !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(fechas.trim())) {
+        return null;
+    };
+
+    const fecha = new Date(`${fechas.trim()}T00:00:00`);
 
     if (isNaN(fecha.getTime())) {
         return null;
@@ -30,24 +36,27 @@ const turnosPorEspecialidad = async (req, res) =>  {
             if (typeof desde !== "string" || typeof hasta !== "string" || !desde.trim() || !hasta.trim()) {
                 return res.status(400).json({
                     codigo: 400,
-                    estado: "Fecha ingresada invalida"
-                });
+                    estado: "Fecha ingresada invalida",
+                datos: null
+});
             };
 
             //Si los input no pertenecen al tipo Date error 400
             if (!(formatearFecha(desde) instanceof Date) || !(formatearFecha(hasta) instanceof Date)) {
                 return res.status(400).json({
                     codigo: 400,
-                    estado: "Dato ingresado invalido, formato de fecha año-mes-día"
-                });
+                    estado: "Dato ingresado invalido, formato de fecha año-mes-día",
+                datos: null
+});
             };
 
             //Si la primer fecha es mayor error 400
             if (formatearFecha(desde) > formatearFecha(hasta)) {
                 return res.status(400).json({
                     codigo: 400,
-                    estado: "La primer fecha debe ser menor o igual a la segunda fecha"
-                });
+                    estado: "La primer fecha debe ser menor o igual a la segunda fecha",
+                datos: null
+});
             };
 
             const fechaDesde = formatearFecha(desde).toLocaleDateString('en-CA');
@@ -115,22 +124,25 @@ const turnosPorSede = async (req, res) => {
         if (typeof desde !== "string" || typeof hasta !== "string" || !desde.trim() || !hasta.trim()) {
             return res.status(400).json({
                 codigo: 400,
-                estado: "Fecha ingresada invalida"
-            });
+                estado: "Fecha ingresada invalida",
+            datos: null
+});
         }
 
         if (!(formatearFecha(desde) instanceof Date) || !(formatearFecha(hasta) instanceof Date)) {
             return res.status(400).json({
                 codigo: 400,
-                estado: "Dato ingresado invalido, formato de fecha año-mes-día"
-            });
+                estado: "Dato ingresado invalido, formato de fecha año-mes-día",
+            datos: null
+});
         }
 
         if (formatearFecha(desde) > formatearFecha(hasta)) {
             return res.status(400).json({
                 codigo: 400,
-                estado: "La primer fecha debe ser menor o igual a la segunda fecha"
-            });
+                estado: "La primer fecha debe ser menor o igual a la segunda fecha",
+            datos: null
+});
         }
 
         const fechaDesde = formatearFecha(desde).toLocaleDateString('en-CA');
@@ -365,9 +377,10 @@ const tasaDeCancelacion = async (req, res) => {
     CASE
         WHEN SUM(CASE WHEN t.estado = 'cancelado' THEN 1 ELSE 0 END) > 0
         THEN ROUND(
-            SUM(CASE WHEN t.estado IN ('confirmado', 'atendido', 'cancelado') THEN 1 ELSE 0 END)
-            /
             SUM(CASE WHEN t.estado = 'cancelado' THEN 1 ELSE 0 END)
+            /
+            SUM(CASE WHEN t.estado IN ('confirmado', 'atendido', 'cancelado') THEN 1 ELSE 0 END)
+            * 100
         , 2)
         ELSE 0
     END AS porcentaje_cancelacion

@@ -16,8 +16,32 @@ const registro = async (req, res) => {
   try {
     const { nombre, apellido, dni, email, password, fecha_nacimiento, id_cobertura, telefono } = req.body;
 
-    if (!nombre || !apellido || !dni || !email || !password || !fecha_nacimiento || !id_cobertura || !telefono) {
+    // El teléfono no es obligatorio en el registro (el enunciado no lo pide);
+    // la columna no admite NULL, así que si no viene se guarda vacío.
+    if (!nombre || !apellido || !dni || !email || !password || !fecha_nacimiento || !id_cobertura) {
       return res.status(400).json({ codigo: 400, estado: "Todos los campos son requeridos", datos: null });
+    }
+
+    // Validaciones según el tamaño de las columnas de la base, para no responder 500.
+    if (String(nombre).trim().length > 30 || String(apellido).trim().length > 30) {
+      return res.status(400).json({ codigo: 400, estado: "El nombre y el apellido no pueden superar los 30 caracteres", datos: null });
+    }
+    if (!/^\d{7,8}$/.test(String(dni))) {
+      return res.status(400).json({ codigo: 400, estado: "El DNI debe tener entre 7 y 8 números", datos: null });
+    }
+    if (String(email).length > 30 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email))) {
+      return res.status(400).json({ codigo: 400, estado: "Ingresá un email válido de hasta 30 caracteres", datos: null });
+    }
+    if (telefono && String(telefono).trim().length > 10) {
+      return res.status(400).json({ codigo: 400, estado: "El teléfono no puede superar los 10 caracteres", datos: null });
+    }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(fecha_nacimiento))) {
+      return res.status(400).json({ codigo: 400, estado: "La fecha de nacimiento debe tener formato YYYY-MM-DD", datos: null });
+    }
+
+    const [coberturaExiste] = await pool.query("SELECT id FROM cobertura WHERE id = ?", [id_cobertura]);
+    if (coberturaExiste.length === 0) {
+      return res.status(400).json({ codigo: 400, estado: "La cobertura seleccionada no existe", datos: null });
     }
 
     const [dniExiste] = await pool.query("SELECT id FROM usuario WHERE dni = ?", [dni]);
@@ -35,7 +59,7 @@ const registro = async (req, res) => {
     const [result] = await pool.query(
       `INSERT INTO usuario (nombre, apellido, dni, email, password, fecha_nacimiento, id_cobertura, telefono, rol)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'paciente')`,
-      [nombre, apellido, dni, email, hash, fecha_nacimiento, id_cobertura, telefono]
+      [String(nombre).trim(), String(apellido).trim(), dni, email, hash, fecha_nacimiento, id_cobertura, telefono ? String(telefono).trim() : ""]
     );
 
     try {

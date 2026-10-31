@@ -89,6 +89,18 @@ const darDeBaja = async (req, res) => {
       });
     }
 
+    const [turnosAsociados] = await pool.query(
+      "SELECT id FROM turno WHERE id_cobertura = ? LIMIT 1",
+      [id]
+    );
+    if (turnosAsociados.length > 0) {
+      return res.status(400).json({
+        codigo: 400,
+        estado: "No se puede eliminar: la cobertura está registrada en turnos",
+        datos: null
+      });
+    }
+
     await pool.query("DELETE FROM cobertura WHERE id = ?", [id]);
 
     try {

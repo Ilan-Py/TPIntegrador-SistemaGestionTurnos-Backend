@@ -1152,7 +1152,7 @@
                 "1"
               ]
             },
-            "description": "Cancela un turno confirmado cambiando su estado. Paciente cancela los suyos. Operador/médico solo de su sede. Genera notificación turno_cancelado.\n\nRol requerido: paciente, operador, medico\nParams: id en la URL\nRespuesta exitosa: 200\nRespuesta error: 403 si turno ajeno o de otra sede, 404 si no existe o no está confirmado"
+            "description": "Cancela un turno confirmado cambiando su estado. Paciente cancela los suyos. Médico solo sus propios turnos (en cualquier sede). Operador solo turnos de su sede. Genera notificación turno_cancelado.\n\nRol requerido: paciente, operador, medico\nParams: id en la URL\nRespuesta exitosa: 200\nRespuesta error: 403 si turno ajeno o de otra sede, 404 si no existe o no está confirmado"
           },
           "response": []
         },
@@ -1178,7 +1178,7 @@
                 "2"
               ]
             },
-            "description": "Intento de cancelar turno de otra sede. Debe devolver 403.\n\nRol requerido: operador, medico"
+            "description": "Operador intenta cancelar un turno de otra sede (o médico, un turno que no es suyo). Debe devolver 403.\n\nRol requerido: operador, medico"
           },
           "response": []
         },
@@ -1503,13 +1503,14 @@
               }
             },
             "url": {
-              "raw": "localhost:4000/reportesYEstadisticas",
+              "raw": "localhost:4000/reportesYEstadisticas/especialidad",
               "host": [
                 "localhost"
               ],
               "port": "4000",
               "path": [
-                "reportesYEstadisticas"
+                "reportesYEstadisticas",
+                "especialidad"
               ]
             },
             "description": "Devuelve los turnos de una especialidad dentro de un rango de fechas, con la cantidad total. Valida que las fechas sean válidas y que la primera no sea mayor que la segunda.\n\nRol requerido: administrador (verificado en el controller)\nBody: desde (YYYY-MM-DD), hasta (YYYY-MM-DD), id_especialidad\nRespuesta exitosa: 200 con cantidad y listado de turnos\nRespuesta error: 400 si fechas inválidas o id_especialidad inválido, 403 si no es administrador, 404 si no hay turnos en ese rango"
@@ -1540,13 +1541,14 @@
               }
             },
             "url": {
-              "raw": "localhost:4000/reportesYEstadisticas",
+              "raw": "localhost:4000/reportesYEstadisticas/especialidad",
               "host": [
                 "localhost"
               ],
               "port": "4000",
               "path": [
-                "reportesYEstadisticas"
+                "reportesYEstadisticas",
+                "especialidad"
               ]
             },
             "description": "Intento con fecha desde mayor que hasta. Debe devolver 400.\n\nRol requerido: administrador"
@@ -1577,13 +1579,14 @@
               }
             },
             "url": {
-              "raw": "localhost:4000/reportesYEstadisticas",
+              "raw": "localhost:4000/reportesYEstadisticas/especialidad",
               "host": [
                 "localhost"
               ],
               "port": "4000",
               "path": [
-                "reportesYEstadisticas"
+                "reportesYEstadisticas",
+                "especialidad"
               ]
             },
             "description": "Intento de acceder a reportes sin rol administrador. Debe devolver 403.\n\nRol requerido: administrador"
@@ -1713,73 +1716,87 @@
         {
           "name": "Listar logs de auditoria (admin)",
           "request": {
-            "method": "POST",
+            "method": "GET",
             "header": [
               {
                 "key": "Authorization",
                 "value": "{{token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
               }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"fechaDesde\": \"2025-01-01\",\n  \"fechaHasta\": \"2025-12-31\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
             "url": {
-              "raw": "localhost:4000/log/listar",
+              "raw": "localhost:4000/logs/auditoria?fechaDesde=2025-01-01&fechaHasta=2025-12-31&pagina=1&limite=10",
               "host": [
                 "localhost"
               ],
               "port": "4000",
               "path": [
-                "log",
-                "listar"
+                "logs",
+                "auditoria"
+              ],
+              "query": [
+                {
+                  "key": "fechaDesde",
+                  "value": "2025-01-01"
+                },
+                {
+                  "key": "fechaHasta",
+                  "value": "2025-12-31"
+                },
+                {
+                  "key": "pagina",
+                  "value": "1"
+                },
+                {
+                  "key": "limite",
+                  "value": "10"
+                }
               ]
             },
-            "description": "Lista los logs de auditoría filtrables por usuario, entidad y rango de fechas. Todos los filtros son opcionales.\n\nRol: administrador\nBody: usuario (opcional), entidad (opcional), fechaDesde (opcional), fechaHasta (opcional)\nRespuesta exitosa: 200 con array de logs\nError: 403 no admin, 404 sin logs"
+            "description": "Lista los logs de auditoría filtrables por usuario, entidad y rango de fechas. Todos los filtros son opcionales.\n\nRol: administrador\nQuery params (todos opcionales): usuario, entidad, fechaDesde (YYYY-MM-DD), fechaHasta (YYYY-MM-DD), pagina, limite\nRespuesta exitosa: 200 con { registros, pagina, limite, total, totalPaginas }, más recientes primero\nError: 400 fechas inválidas, 403 no admin"
           },
           "response": []
         },
         {
           "name": "Listar logs filtrado por entidad",
           "request": {
-            "method": "POST",
+            "method": "GET",
             "header": [
               {
                 "key": "Authorization",
                 "value": "{{token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
               }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"entidad\": \"turno\",\n  \"fechaDesde\": \"2025-01-01\",\n  \"fechaHasta\": \"2025-12-31\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
             "url": {
-              "raw": "localhost:4000/log/listar",
+              "raw": "localhost:4000/logs/auditoria?entidad=turno&fechaDesde=2025-01-01&fechaHasta=2025-12-31&pagina=1&limite=10",
               "host": [
                 "localhost"
               ],
               "port": "4000",
               "path": [
-                "log",
-                "listar"
+                "logs",
+                "auditoria"
+              ],
+              "query": [
+                {
+                  "key": "entidad",
+                  "value": "turno"
+                },
+                {
+                  "key": "fechaDesde",
+                  "value": "2025-01-01"
+                },
+                {
+                  "key": "fechaHasta",
+                  "value": "2025-12-31"
+                },
+                {
+                  "key": "pagina",
+                  "value": "1"
+                },
+                {
+                  "key": "limite",
+                  "value": "10"
+                }
               ]
             },
             "description": "Lista logs filtrando por entidad específica.\n\nRol: administrador\nEntidades posibles: turno, sede, especialidad, cobertura, agenda, usuario"
@@ -1789,35 +1806,40 @@
         {
           "name": "Listar logs sin ser admin (espera 403)",
           "request": {
-            "method": "POST",
+            "method": "GET",
             "header": [
               {
                 "key": "Authorization",
                 "value": "{{token}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
               }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"fechaDesde\": \"2025-01-01\",\n  \"fechaHasta\": \"2025-12-31\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
             "url": {
-              "raw": "localhost:4000/log/listar",
+              "raw": "localhost:4000/logs/auditoria?fechaDesde=2025-01-01&fechaHasta=2025-12-31&pagina=1&limite=10",
               "host": [
                 "localhost"
               ],
               "port": "4000",
               "path": [
-                "log",
-                "listar"
+                "logs",
+                "auditoria"
+              ],
+              "query": [
+                {
+                  "key": "fechaDesde",
+                  "value": "2025-01-01"
+                },
+                {
+                  "key": "fechaHasta",
+                  "value": "2025-12-31"
+                },
+                {
+                  "key": "pagina",
+                  "value": "1"
+                },
+                {
+                  "key": "limite",
+                  "value": "10"
+                }
               ]
             },
             "description": "Intento de acceder a logs sin rol administrador. Debe devolver 403.\n\nRol: cualquier otro rol"

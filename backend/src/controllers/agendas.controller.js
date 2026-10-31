@@ -142,11 +142,15 @@ const actualizarAgenda = async (req, res) => {
     const { hora_entrada, hora_salida, fecha, id_especialidad, id_sede } = req.body;
     let { id_medico } = req.body;
 
-    if (!hora_entrada || !hora_salida || !fecha || !id_medico || !id_especialidad || !id_sede) {
+    // El médico no necesita enviar id_medico: se toma del token (igual que en el alta).
+    if (!hora_entrada || !hora_salida || !fecha || (!id_medico && req.usuario.rol !== "medico") || !id_especialidad || !id_sede) {
       return res.status(400).json({ codigo: 400, estado: "Todos los campos son requeridos", datos: null });
     }
 
-    const [agendaExiste] = await pool.query("SELECT * FROM agenda WHERE id = ?", [id]);
+    const [agendaExiste] = await pool.query(
+      "SELECT *, DATE_FORMAT(fecha, '%Y-%m-%d') AS fecha_iso FROM agenda WHERE id = ?",
+      [id]
+    );
     if (agendaExiste.length === 0) {
       return res.status(404).json({ codigo: 404, estado: "Agenda no encontrada", datos: null });
     }
@@ -156,6 +160,39 @@ const actualizarAgenda = async (req, res) => {
         return res.status(403).json({ codigo: 403, estado: "No tenés permisos para modificar esta agenda", datos: null });
       }
       id_medico = req.usuario.id;
+    }
+
+    // Si el rango tiene turnos confirmados, no se puede mover a otro día/médico/especialidad/sede
+    // ni achicar el horario dejando algún turno confirmado afuera.
+    const [turnosConfirmados] = await pool.query(
+      "SELECT hora FROM turno WHERE id_agenda = ? AND estado = 'confirmado'",
+      [id]
+    );
+
+    if (turnosConfirmados.length > 0) {
+      const actual = agendaExiste[0];
+      const cambiaDatos =
+        fecha !== actual.fecha_iso ||
+        Number(id_medico) !== actual.id_medico ||
+        Number(id_especialidad) !== actual.id_especialidad ||
+        Number(id_sede) !== actual.id_sede;
+
+      if (cambiaDatos) {
+        return res.status(400).json({
+          codigo: 400,
+          estado: "No se puede cambiar la fecha, el médico, la especialidad ni la sede de un rango horario con turnos confirmados",
+          datos: null
+        });
+      }
+
+      const turnosAfuera = turnosConfirmados.filter(t => t.hora < hora_entrada || t.hora >= hora_salida);
+      if (turnosAfuera.length > 0) {
+        return res.status(400).json({
+          codigo: 400,
+          estado: `No se puede modificar: ${turnosAfuera.length} turno(s) confirmado(s) quedarían fuera del nuevo horario (${turnosAfuera.map(t => t.hora).join(", ")})`,
+          datos: null
+        });
+      }
     }
 
     const [medicoExiste] = await pool.query(
@@ -221,6 +258,28 @@ const darDeBajaAgenda = async (req, res) => {
       if (agendaExiste[0].id_medico !== req.usuario.id) {
         return res.status(403).json({ codigo: 403, estado: "No tenés permisos para eliminar esta agenda", datos: null });
       }
+    }
+
+    // Un rango con turnos (de cualquier estado) no se puede borrar: los turnos lo referencian.
+    const [turnos] = await pool.query(
+      "SELECT SUM(estado = 'confirmado') AS confirmados, COUNT(*) AS total FROM turno WHERE id_agenda = ?",
+      [id]
+    );
+
+    if (Number(turnos[0].confirmados) > 0) {
+      return res.status(400).json({
+        codigo: 400,
+        estado: "No se puede eliminar: el rango horario tiene turnos confirmados",
+        datos: null
+      });
+    }
+
+    if (Number(turnos[0].total) > 0) {
+      return res.status(400).json({
+        codigo: 400,
+        estado: "No se puede eliminar: el rango horario tiene turnos atendidos o cancelados registrados",
+        datos: null
+      });
     }
 
     await pool.query("DELETE FROM agenda WHERE id = ?", [id]);

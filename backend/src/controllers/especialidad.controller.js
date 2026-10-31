@@ -89,6 +89,18 @@ const darDeBaja = async (req, res) => {
       });
     }
 
+    const [agendasAsociadas] = await pool.query(
+      "SELECT id FROM agenda WHERE id_especialidad = ? LIMIT 1",
+      [id]
+    );
+    if (agendasAsociadas.length > 0) {
+      return res.status(400).json({
+        codigo: 400,
+        estado: "No se puede eliminar: la especialidad está utilizada en la agenda",
+        datos: null
+      });
+    }
+
     await pool.query("DELETE FROM especialidad WHERE id = ?", [id]);
 
     try {

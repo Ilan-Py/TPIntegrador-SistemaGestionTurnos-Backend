@@ -1,9 +1,33 @@
 const pool = require("../database/database");
 const { logDarAlta, logDarBaja }   = require("./logsAuditoria.controller");
 
-const formatearFecha = (fechaISO) => {
-    const [anio, mes, dia] = fechaISO.split("-");
+// La fecha puede llegar como string "YYYY-MM-DD" (desde el body) o como objeto Date
+// (mysql2 devuelve así las columnas DATE). Se aceptan ambos casos.
+const formatearFecha = (fecha) => {
+    if (fecha instanceof Date) {
+        const dia = String(fecha.getDate()).padStart(2, "0");
+        const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+        return `${dia}/${mes}/${fecha.getFullYear()}`;
+    }
+    const [anio, mes, dia] = String(fecha).split("-");
     return `${dia}/${mes}/${anio}`;
+};
+
+// Ejecuta varias consultas como una sola operación: si alguna falla se deshacen todas,
+// así un turno nunca queda creado/cancelado/atendido sin su notificación.
+const enTransaccion = async (operacion) => {
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+        const resultado = await operacion(connection);
+        await connection.commit();
+        return resultado;
+    } catch (error) {
+        await connection.rollback();
+        throw error;
+    } finally {
+        connection.release();
+    }
 };
 
 const darAltaTurno = async (req, res) => {
@@ -67,16 +91,18 @@ const darAltaTurno = async (req, res) => {
             return res.status(400).json({ codigo: 400, estado: "Ese horario ya se encuentra reservado", datos: null });
         }
 
-        const [result] = await pool.query(
-            "INSERT INTO turno (nota, id_agenda, fecha, hora, id_paciente, id_cobertura, estado) VALUES (?, ?, ?, ?, ?, ?, 'confirmado')",
-            [nota.trim(), agenda.id, fecha, hora, id_paciente, id_cobertura]
-        );
-
         const mensaje = `Tu turno del ${formatearFecha(fecha)} a las ${hora} fue confirmado.`;
-        await pool.query(
-            "INSERT INTO notificacion (id_usuario, tipo, mensaje, leida) VALUES (?, 'turno_confirmado', ?, 0)",
-            [id_paciente, mensaje]
-        );
+        const result = await enTransaccion(async (connection) => {
+            const [insercion] = await connection.query(
+                "INSERT INTO turno (nota, id_agenda, fecha, hora, id_paciente, id_cobertura, estado) VALUES (?, ?, ?, ?, ?, ?, 'confirmado')",
+                [nota.trim(), agenda.id, fecha, hora, id_paciente, id_cobertura]
+            );
+            await connection.query(
+                "INSERT INTO notificacion (id_usuario, tipo, mensaje, leida) VALUES (?, 'turno_confirmado', ?, 0)",
+                [id_paciente, mensaje]
+            );
+            return insercion;
+        });
 
         try {
             await logDarAlta(req.usuario.id, "ALTA", "turno", result.insertId, `Turno con ID ${result.insertId} creado para paciente ID ${id_paciente} con nota: ${nota.trim()}, fecha: ${fecha}, hora: ${hora}, cobertura ID: ${id_cobertura}, agenda ID: ${agenda.id}`);
@@ -116,7 +142,7 @@ const darDeBajaTurno = async (req, res) => {
         };
 
         const [turnoExiste] = await pool.query(
-            "SELECT t.*, a.id_sede FROM turno t INNER JOIN agenda a ON a.id = t.id_agenda WHERE t.id = ? AND t.estado = 'confirmado'",
+            "SELECT t.*, a.id_sede, a.id_medico FROM turno t INNER JOIN agenda a ON a.id = t.id_agenda WHERE t.id = ? AND t.estado = 'confirmado'",
             [id]
         );
 
@@ -124,25 +150,29 @@ const darDeBajaTurno = async (req, res) => {
             return res.status(404).json({ codigo: 404, estado: "Turno no encontrado", datos: null });
         }
 
-        if (req.usuario.rol === "paciente") {
-            if (turnoExiste[0].id_paciente !== req.usuario.id) {
-                return res.status(403).json({ codigo: 403, estado: "No tenés permisos para cancelar este turno", datos: null });
-            }
-            await pool.query("UPDATE turno SET estado = 'cancelado' WHERE id = ?", [id]);
-        };
+        // Paciente: solo sus propios turnos.
+        if (req.usuario.rol === "paciente" && turnoExiste[0].id_paciente !== req.usuario.id) {
+            return res.status(403).json({ codigo: 403, estado: "No tenés permisos para cancelar este turno", datos: null });
+        }
 
-        if (req.usuario.rol === "operador" || req.usuario.rol === "medico") {
-            if (turnoExiste[0].id_sede !== req.usuario.id_sede) {
-                return res.status(403).json({ codigo: 403, estado: "No tiene permisos para cancelar un turno de otra sede", datos: null });
-            };
-            await pool.query("UPDATE turno SET estado = 'cancelado' WHERE id = ?", [id]);
-        };
+        // Médico: solo sus propios turnos, en cualquiera de las sedes donde atiende.
+        if (req.usuario.rol === "medico" && turnoExiste[0].id_medico !== req.usuario.id) {
+            return res.status(403).json({ codigo: 403, estado: "Solo podés cancelar tus propios turnos", datos: null });
+        }
+
+        // Operador: solo turnos de su sede.
+        if (req.usuario.rol === "operador" && turnoExiste[0].id_sede !== req.usuario.id_sede) {
+            return res.status(403).json({ codigo: 403, estado: "No tiene permisos para cancelar un turno de otra sede", datos: null });
+        }
 
         const mensaje = `Tu turno del ${formatearFecha(turnoExiste[0].fecha)} a las ${turnoExiste[0].hora} fue cancelado.`;
-        await pool.query(
-            "INSERT INTO notificacion (id_usuario, tipo, mensaje, leida) VALUES (?, 'turno_cancelado', ?, 0)",
-            [turnoExiste[0].id_paciente, mensaje]
-        );
+        await enTransaccion(async (connection) => {
+            await connection.query("UPDATE turno SET estado = 'cancelado' WHERE id = ?", [id]);
+            await connection.query(
+                "INSERT INTO notificacion (id_usuario, tipo, mensaje, leida) VALUES (?, 'turno_cancelado', ?, 0)",
+                [turnoExiste[0].id_paciente, mensaje]
+            );
+        });
 
         try {
             await logDarBaja(
@@ -150,7 +180,7 @@ const darDeBajaTurno = async (req, res) => {
   "BAJA",
   "turno",
   id,
-  `Turno con ID ${id} cancelado para paciente ID ${turnoExiste[0].id_paciente}, fecha: ${turnoExiste[0].fecha}, hora: ${turnoExiste[0].hora}`
+  `Turno con ID ${id} cancelado para paciente ID ${turnoExiste[0].id_paciente}, fecha: ${formatearFecha(turnoExiste[0].fecha)}, hora: ${turnoExiste[0].hora}`
 );
         } catch (logError) {
             console.error("Error al registrar el log de baja:", logError);
@@ -196,13 +226,14 @@ const atenderTurno = async (req, res) => {
             return res.status(403).json({ codigo: 403, estado: "Solo podés atender tus propios turnos", datos: null });
         }
 
-        await pool.query("UPDATE turno SET estado = 'atendido' WHERE id = ?", [id]);
-
         const mensaje = `Tu turno del ${formatearFecha(turnoExiste[0].fecha)} a las ${turnoExiste[0].hora} fue atendido. Ya podés consultar tu historial clínico.`;
-        await pool.query(
-            "INSERT INTO notificacion (id_usuario, tipo, mensaje, leida) VALUES (?, 'turno_atendido', ?, 0)",
-            [turnoExiste[0].id_paciente, mensaje]
-        );
+        await enTransaccion(async (connection) => {
+            await connection.query("UPDATE turno SET estado = 'atendido' WHERE id = ?", [id]);
+            await connection.query(
+                "INSERT INTO notificacion (id_usuario, tipo, mensaje, leida) VALUES (?, 'turno_atendido', ?, 0)",
+                [turnoExiste[0].id_paciente, mensaje]
+            );
+        });
 
         return res.status(200).json({
             codigo: 200,
