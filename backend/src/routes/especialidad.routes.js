@@ -4,7 +4,8 @@ const { verificarToken, verificarRol } = require("../middlewares/auth.middleware
 
 const router = Router();
 
-router.get("/",       verificarToken, verificarRol("administrador"), listarEspecialidades);
+// Listado para cualquier usuario con sesión; alta, modificación y baja solo administrador.
+router.get("/",       verificarToken, listarEspecialidades);
 router.post("/",      verificarToken, verificarRol("administrador"), darDeAlta);
 router.put("/:id",    verificarToken, verificarRol("administrador"), actualizarEspecialidad);
 router.delete("/:id", verificarToken, verificarRol("administrador"), darDeBaja);

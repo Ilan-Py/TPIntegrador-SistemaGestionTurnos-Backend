@@ -250,7 +250,7 @@
                 "perfil"
               ]
             },
-            "description": "Devuelve datos completos del usuario autenticado incluyendo sede y cobertura.\n\nRol requerido: cualquier usuario autenticado\nRespuesta exitosa: 200 con datos del usuario\nRespuesta error: 401 sin token"
+            "description": "Devuelve datos completos del usuario autenticado incluyendo sede y cobertura. Para el rol medico incluye además 'especialidades': [{ id, descripcion }].\n\nRol requerido: cualquier usuario autenticado\nRespuesta exitosa: 200 con datos del usuario\nRespuesta error: 401 sin token"
           },
           "response": []
         },
@@ -300,7 +300,7 @@
                 "sedes"
               ]
             },
-            "description": "Devuelve todas las sedes.\n\nRol requerido: administrador\nRespuesta exitosa: 200 con array de sedes\nRespuesta error: 401 sin token, 403 sin rol administrador"
+            "description": "Devuelve todas las sedes.\n\nRol requerido: cualquier usuario autenticado\nRespuesta exitosa: 200 con array de sedes\nRespuesta error: 401 sin token"
           },
           "response": []
         },
@@ -455,7 +455,7 @@
                 "especialidades"
               ]
             },
-            "description": "Devuelve todas las especialidades.\n\nRol requerido: administrador\nRespuesta exitosa: 200 con array"
+            "description": "Devuelve todas las especialidades.\n\nRol requerido: cualquier usuario autenticado\nRespuesta exitosa: 200 con array"
           },
           "response": []
         },
@@ -963,7 +963,7 @@
                 "altaTurno"
               ]
             },
-            "description": "Solicita un turno. Valida horario en agenda y disponibilidad. Cobertura tomada automáticamente del paciente. Genera notificación turno_confirmado.\n\nRol requerido: paciente, operador\nBody: id_medico, id_especialidad, id_sede, fecha, hora, nota (obligatoria). Operador agrega id_paciente.\nRespuesta exitosa: 201\nRespuesta error: 400 si hora fuera de agenda u ocupada, 404 si no hay agenda"
+            "description": "Solicita un turno. Valida horario en agenda y disponibilidad. Los turnos duran 30 minutos: la hora debe ser uno de los horarios de GET /disponibilidad/horarios. El operador solo puede asignar turnos en su sede (403). Cobertura tomada automáticamente del paciente. Genera notificación turno_confirmado.\n\nRol requerido: paciente, operador\nBody: id_medico, id_especialidad, id_sede, fecha, hora, nota (obligatoria). Operador agrega id_paciente.\nRespuesta exitosa: 201\nRespuesta error: 400 si hora fuera de agenda, fuera de la grilla de 30 min u ocupada; 403 operador en otra sede; 404 si no hay agenda"
           },
           "response": []
         },
@@ -1095,7 +1095,7 @@
                 }
               ]
             },
-            "description": "Lista los turnos del médico autenticado para una fecha.\n\nRol requerido: medico\nQuery params: fecha (requerido, YYYY-MM-DD)"
+            "description": "Lista los turnos del médico autenticado para una fecha.\n\nRol requerido: medico\nQuery params: fecha (requerido, YYYY-MM-DD), id_sede (opcional)\nIncluye id_paciente, paciente_dni, paciente_fecha_nacimiento, paciente_edad, id_sede e id_especialidad."
           },
           "response": []
         },
@@ -1848,12 +1848,593 @@
         }
       ],
       "description": "Consulta del log de auditoría. Los registros se generan automáticamente al crear, modificar o eliminar sedes, especialidades, coberturas, agendas, turnos y usuarios."
+    },
+    {
+      "name": "CAMBIOS PARA EL FRONTEND",
+      "description": "Endpoints agregados o modificados para el frontend (enunciado 'Frontend — Semanas 2 a 4', sección 'Sugerencias de cambios en el backend').\n\nAntes de probar disponibilidad: cargar una agenda futura (AGENDAS > Crear turno de agenda) y poner esa fecha en la variable de colección {{fecha_turno}}.",
+      "item": [
+        {
+          "name": "Listar sedes (cualquier rol)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/sedes",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "sedes"
+              ]
+            },
+            "description": "Listado de sedes para cualquier usuario con sesión (antes era solo administrador). Lo usan el médico al cargar su agenda y el paciente al pedir turno. Alta, modificación y baja siguen siendo solo del administrador.\n\nRol requerido: cualquier usuario autenticado\nRespuesta exitosa: 200 con array de sedes\nRespuesta error: 401 sin token"
+          },
+          "response": []
+        },
+        {
+          "name": "Listar especialidades (cualquier rol)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/especialidades",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "especialidades"
+              ]
+            },
+            "description": "Listado de especialidades para cualquier usuario con sesión (antes era solo administrador). Alta, modificación y baja siguen siendo solo del administrador.\n\nRol requerido: cualquier usuario autenticado\nRespuesta exitosa: 200 con array de especialidades\nRespuesta error: 401 sin token"
+          },
+          "response": []
+        },
+        {
+          "name": "Crear sede sin ser admin (espera 403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/sedes",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "sedes"
+              ]
+            },
+            "description": "Con token de paciente/médico/operador: el alta de sedes sigue siendo exclusiva del administrador. Debe devolver 403.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Sede Prueba\",\n  \"direccion\": \"Calle 1\",\n  \"telefono\": \"3420000000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar médicos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/medicos",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "medicos"
+              ]
+            },
+            "description": "Lista los médicos con sus especialidades. Solo devuelve id, nombre, apellido, sede y especialidades (sin DNI, email ni otros datos personales).\n\nRol requerido: cualquier usuario autenticado\nQuery params (opcionales):\n- id_especialidad: médicos con esa especialidad\n- id_sede: médicos de esa sede o con agenda en esa sede\n- con_agenda=true: solo médicos con agenda desde hoy (respeta los otros filtros)\nRespuesta exitosa: 200 con [{ id, nombre, apellido, id_sede, sede, especialidades: [{ id, descripcion }] }]\nRespuesta error: 400 parámetro inválido, 401 sin token"
+          },
+          "response": []
+        },
+        {
+          "name": "Listar médicos para nuevo turno",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/medicos?id_especialidad=1&id_sede=1&con_agenda=true",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "medicos"
+              ],
+              "query": [
+                {
+                  "key": "id_especialidad",
+                  "value": "1"
+                },
+                {
+                  "key": "id_sede",
+                  "value": "1"
+                },
+                {
+                  "key": "con_agenda",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Médicos de una especialidad con agenda futura en una sede: es el paso 'médico' de la solicitud de turno.\n\nRol requerido: cualquier usuario autenticado"
+          },
+          "response": []
+        },
+        {
+          "name": "Perfil del médico (con especialidades)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/auth/perfil",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "auth",
+                "perfil"
+              ]
+            },
+            "description": "Con token de médico, GET /auth/perfil devuelve además 'especialidades': [{ id, descripcion }], que el médico usa para elegir la especialidad al cargar su agenda.\n\nRol requerido: cualquier usuario autenticado (especialidades solo para rol medico)"
+          },
+          "response": []
+        },
+        {
+          "name": "Fechas disponibles",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/disponibilidad/fechas?id_medico=3&id_especialidad=1&id_sede=1",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "disponibilidad",
+                "fechas"
+              ],
+              "query": [
+                {
+                  "key": "id_medico",
+                  "value": "3"
+                },
+                {
+                  "key": "id_especialidad",
+                  "value": "1"
+                },
+                {
+                  "key": "id_sede",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Fechas (desde hoy) en las que el médico tiene agenda para esa especialidad y sede, con al menos un horario libre.\n\nRol requerido: paciente, operador\nQuery params (requeridos): id_medico, id_especialidad, id_sede\nRespuesta exitosa: 200 con array de fechas YYYY-MM-DD\nRespuesta error: 400 parámetros faltantes o inválidos, 403 otro rol"
+          },
+          "response": []
+        },
+        {
+          "name": "Horarios disponibles",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/disponibilidad/horarios?id_medico=3&id_especialidad=1&id_sede=1&fecha={{fecha_turno}}",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "disponibilidad",
+                "horarios"
+              ],
+              "query": [
+                {
+                  "key": "id_medico",
+                  "value": "3"
+                },
+                {
+                  "key": "id_especialidad",
+                  "value": "1"
+                },
+                {
+                  "key": "id_sede",
+                  "value": "1"
+                },
+                {
+                  "key": "fecha",
+                  "value": "{{fecha_turno}}"
+                }
+              ]
+            },
+            "description": "Horarios libres de un día: los horarios de los rangos de agenda del médico para esa especialidad y sede, menos los turnos confirmados. Cada turno dura 30 minutos y empieza en la hora de entrada del rango, cada 30 minutos (por ejemplo, 09:00 a 10:30 -> 09:00, 09:30, 10:00). Si la fecha es hoy, no se ofrecen horarios que ya pasaron. No expone datos de otros pacientes.\n\nRol requerido: paciente, operador\nQuery params (requeridos): id_medico, id_especialidad, id_sede, fecha (YYYY-MM-DD, hoy o posterior)\nRespuesta exitosa: 200 con { fecha, duracion_minutos, horarios: [\"HH:MM\", ...] }\nRespuesta error: 400 parámetros inválidos o fecha pasada, 403 otro rol"
+          },
+          "response": []
+        },
+        {
+          "name": "Disponibilidad como médico (espera 403)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/disponibilidad/fechas?id_medico=3&id_especialidad=1&id_sede=1",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "disponibilidad",
+                "fechas"
+              ],
+              "query": [
+                {
+                  "key": "id_medico",
+                  "value": "3"
+                },
+                {
+                  "key": "id_especialidad",
+                  "value": "1"
+                },
+                {
+                  "key": "id_sede",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Con token de médico o administrador debe devolver 403: la consulta de disponibilidad es para paciente y operador."
+          },
+          "response": []
+        },
+        {
+          "name": "Alta de turno fuera de la grilla de 30 minutos (espera 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/turnos/altaTurno",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "turnos",
+                "altaTurno"
+              ]
+            },
+            "description": "Los turnos duran 30 minutos y deben empezar en uno de los horarios que devuelve GET /disponibilidad/horarios. Una hora intermedia (por ejemplo 15:10 en una agenda que empieza a las 15:00) devuelve 400.\n\nRol requerido: paciente, operador",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_medico\": 3,\n  \"id_especialidad\": 1,\n  \"id_sede\": 1,\n  \"fecha\": \"2025-10-20\",\n  \"hora\": \"15:10\",\n  \"nota\": \"Hora fuera de la grilla\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Operador asigna turno en otra sede (espera 403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/turnos/altaTurno",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "turnos",
+                "altaTurno"
+              ]
+            },
+            "description": "Con token de operador: solo puede asignar turnos en su propia sede. Si id_sede es otra, devuelve 403.\n\nRol requerido: operador",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_paciente\": 4,\n  \"id_medico\": 3,\n  \"id_especialidad\": 1,\n  \"id_sede\": 2,\n  \"fecha\": \"2025-10-20\",\n  \"hora\": \"15:00\",\n  \"nota\": \"Otra sede\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar pacientes por DNI",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/pacientes?dni=0000",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "pacientes"
+              ],
+              "query": [
+                {
+                  "key": "dni",
+                  "value": "0000"
+                }
+              ]
+            },
+            "description": "Búsqueda de pacientes por DNI (que empiece con el valor) o por apellido (que lo contenga). Devuelve hasta 20 resultados, solo usuarios con rol paciente.\n\nRol requerido: operador, medico, administrador\nQuery params: dni y/o apellido (al menos uno; apellido con 2 letras o más)\nRespuesta exitosa: 200 con [{ id, nombre, apellido, dni, email, telefono, fecha_nacimiento, edad, id_cobertura, cobertura }]\nRespuesta error: 400 sin criterio o DNI no numérico, 403 rol paciente"
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar pacientes por apellido",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/pacientes?apellido=Prueba",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "pacientes"
+              ],
+              "query": [
+                {
+                  "key": "apellido",
+                  "value": "Prueba"
+                }
+              ]
+            },
+            "description": "Búsqueda por apellido (contiene, sin distinguir mayúsculas).\n\nRol requerido: operador, medico, administrador"
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar pacientes como paciente (espera 403)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/pacientes?dni=0000",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "pacientes"
+              ],
+              "query": [
+                {
+                  "key": "dni",
+                  "value": "0000"
+                }
+              ]
+            },
+            "description": "Con token de paciente debe devolver 403."
+          },
+          "response": []
+        },
+        {
+          "name": "Paciente actualiza sus datos",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/auth/perfil",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "auth",
+                "perfil"
+              ]
+            },
+            "description": "El paciente modifica sus propios datos. Solo se permiten email, password, telefono e id_cobertura; se envían solo los campos que cambian. La contraseña se guarda hasheada con bcrypt. Queda registrado en la auditoría (sin la contraseña).\n\nRol requerido: paciente\nBody (al menos uno): email, password (mín. 6), telefono (máx. 10), id_cobertura\nRespuesta exitosa: 200 con { id, campos_modificados }\nRespuesta error: 400 campo no permitido, email inválido o duplicado, cobertura inexistente, contraseña corta o body vacío; 403 otro rol",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"telefono\": \"3425550000\",\n  \"id_cobertura\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Paciente intenta modificar el nombre (espera 400)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/auth/perfil",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "auth",
+                "perfil"
+              ]
+            },
+            "description": "Enviar campos distintos de email, password, telefono e id_cobertura devuelve 400 y no modifica nada.\n\nRol requerido: paciente",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Otro nombre\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Turnos del médico por fecha y sede",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "localhost:4000/turnos/medico?fecha={{fecha_turno}}&id_sede=1",
+              "host": [
+                "localhost"
+              ],
+              "port": "4000",
+              "path": [
+                "turnos",
+                "medico"
+              ],
+              "query": [
+                {
+                  "key": "fecha",
+                  "value": "{{fecha_turno}}"
+                },
+                {
+                  "key": "id_sede",
+                  "value": "1"
+                }
+              ]
+            },
+            "description": "Turnos del médico autenticado para una fecha, en todas las sedes donde atiende, con filtro opcional por sede. Incluye datos del paciente para la pantalla de turnos programados: id_paciente, paciente_dni, paciente_fecha_nacimiento y paciente_edad, además de id_sede, sede, id_especialidad y especialidad.\n\nRol requerido: medico\nQuery params: fecha (requerido, YYYY-MM-DD), id_sede (opcional)\nRespuesta exitosa: 200 con array de turnos ordenados por hora"
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "variable": [
     {
       "key": "token",
       "value": ""
+    },
+    {
+      "key": "fecha_turno",
+      "value": "2026-11-20",
+      "description": "Fecha futura con agenda cargada (YYYY-MM-DD). Actualizarla antes de probar disponibilidad."
     }
   ]
 }

@@ -12,11 +12,12 @@ Sistema web para la gestión de turnos médicos, usuarios y agendas de una clín
 
 ```
 ├── backend/    <- API REST — Node.js + Express + MySQL
-├── frontend/   <- Aplicación web — Angular 21 + Angular Material
 └── README.md
 ```
 
-Cada carpeta tiene su propio README con instrucciones específicas.
+El frontend (Angular 21 + Angular Material) está en un repositorio aparte: **TPIntegrador-SistemaGestionTurnos-Frontend**.
+
+La carpeta `backend/` tiene su propio README con instrucciones y la lista completa de endpoints.
 
 ---
 
@@ -28,7 +29,7 @@ Cada carpeta tiene su propio README con instrucciones específicas.
 - JWT — autenticación
 - bcrypt — hash de contraseñas
 
-**Frontend** *(próxima etapa)*
+**Frontend** *(repositorio aparte)*
 - Angular 21
 - Angular Material
 
@@ -36,17 +37,42 @@ Cada carpeta tiene su propio README con instrucciones específicas.
 
 ## Changelog
 
+### [Frontend] — Cambios en el backend para el frontend
+
+#### Agregado
+- `GET /medicos` — médicos con sus especialidades, sin datos personales; filtros por especialidad, sede y agenda futura
+- `GET /disponibilidad/fechas` y `GET /disponibilidad/horarios` — fechas y horarios libres para pedir turno (paciente y operador)
+- `GET /pacientes` — búsqueda de pacientes por DNI o apellido (operador, médico y administrador)
+- `PUT /auth/perfil` — el paciente modifica email, contraseña, teléfono y cobertura
+- Duración de turno de 30 minutos (`src/utils/horarios.js`), compartida por la disponibilidad y el alta de turno
+- Carpeta "CAMBIOS PARA EL FRONTEND" en `backend/postman/backend-semana-4.json`
+
+#### Modificado
+- `GET /sedes` y `GET /especialidades` disponibles para cualquier usuario con sesión
+- `GET /auth/perfil` incluye las especialidades del médico
+- `GET /turnos/medico` incluye edad y datos del paciente, sede y especialidad; filtro opcional por sede
+- `POST /turnos/altaTurno` valida la grilla de 30 minutos y que el operador asigne turnos solo en su sede
+
+#### Corregido
+- Cancelar y atender turno devolvían 500 y no generaban la notificación
+- El médico podía cancelar turnos de otro médico de su sede
+- Bajas con dependencias (especialidad en agenda, cobertura en turnos, agenda con turnos) devolvían 500
+- Se podía modificar un rango de agenda dejando turnos confirmados afuera
+- Registro: teléfono opcional y validación de longitudes según la base
+- Reportes: el rango de fechas se corría un día y la tasa de cancelación estaba invertida
+- Rutas de reportes y auditoría mal escritas en la colección de Postman
+
 ### [Semana 4] — Backend: Reportes, documentación y cierre
 
 #### Agregado
-- Endpoint de reportes y estadísticas `POST /reportesYEstadisticas` — solo rol `administrador`
+- Endpoints de reportes y estadísticas `POST /reportesYEstadisticas/...` (especialidad, sede, ranking-medicos, tasa-cancelacion) — solo rol `administrador`
   - Consulta de turnos por especialidad dentro de un rango de fechas
   - Validación de formato de fechas, rango válido e id_especialidad
   - Devuelve cantidad total y listado de turnos
 - Historial clínico separado como paso posterior a la atención
   - `POST /historial/:id` — el médico registra diagnóstico, tratamiento y observaciones luego de atender el turno
   - Validación de turno atendido, pertenencia al médico y no duplicación
-- Colección Postman completa con todos los endpoints y descripciones `backend/postman/coleccion-completa.json`
+- Colección Postman completa con todos los endpoints y descripciones `backend/postman/backend-semana-4.json`
 
 #### Modificado
 - `PATCH /turnos/bajaTurno/:id` — método cambiado de `DELETE` a `PATCH` ya que la operación modifica el estado del turno a cancelado sin eliminar el registro

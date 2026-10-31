@@ -1,5 +1,6 @@
 const pool = require("../database/database");
 const { logDarAlta, logDarBaja }   = require("./logsAuditoria.controller");
+const { DURACION_TURNO_MINUTOS, esHoraValida, generarHorarios } = require("../utils/horarios");
 
 // La fecha puede llegar como string "YYYY-MM-DD" (desde el body) o como objeto Date
 // (mysql2 devuelve así las columnas DATE). Se aceptan ambos casos.
@@ -44,11 +45,19 @@ const darAltaTurno = async (req, res) => {
             return res.status(400).json({ codigo: 400, estado: "La nota es obligatoria", datos: null });
         }
 
+        if (!esHoraValida(hora)) {
+            return res.status(400).json({ codigo: 400, estado: "La hora debe tener formato HH:MM", datos: null });
+        }
+
         if (req.usuario.rol === "paciente") {
             id_paciente = req.usuario.id;
         } else if (req.usuario.rol === "operador") {
             if (!id_paciente) {
                 return res.status(400).json({ codigo: 400, estado: "El operador debe indicar el id_paciente", datos: null });
+            }
+            // El operador asigna turnos solo en su propia sede.
+            if (Number(id_sede) !== req.usuario.id_sede) {
+                return res.status(403).json({ codigo: 403, estado: "El operador solo puede asignar turnos en su propia sede", datos: null });
             }
         }
 
@@ -76,10 +85,22 @@ const darAltaTurno = async (req, res) => {
             return res.status(404).json({ codigo: 404, estado: "No existe agenda para ese medico, especialidad, sede y fecha", datos: null });
         }
 
-        const agenda = agendas.find(a => hora >= a.hora_entrada && hora < a.hora_salida);
+        const agendaDelHorario = agendas.find(a => hora >= a.hora_entrada && hora < a.hora_salida);
+
+        if (!agendaDelHorario) {
+            return res.status(400).json({ codigo: 400, estado: "La hora ingresada no esta dentro del horario de atencion del medico", datos: null });
+        }
+
+        // Los turnos duran DURACION_TURNO_MINUTOS y empiezan en los mismos horarios
+        // que ofrece GET /disponibilidad/horarios.
+        const agenda = agendas.find(a => generarHorarios(a.hora_entrada, a.hora_salida).includes(hora));
 
         if (!agenda) {
-            return res.status(400).json({ codigo: 400, estado: "La hora ingresada no esta dentro del horario de atencion del medico", datos: null });
+            return res.status(400).json({
+                codigo: 400,
+                estado: `Los turnos duran ${DURACION_TURNO_MINUTOS} minutos: la hora debe ser uno de los horarios de la agenda (desde ${agendaDelHorario.hora_entrada}, cada ${DURACION_TURNO_MINUTOS} minutos, terminando antes de ${agendaDelHorario.hora_salida})`,
+                datos: null
+            });
         }
 
         const [ocupado] = await pool.query(
@@ -274,24 +295,36 @@ const misTurnos = async (req, res) => {
 
 const turnosMedico = async (req, res) => {
     try {
-        const { fecha } = req.query;
+        const { fecha, id_sede } = req.query;
 
         if (!fecha) {
             return res.status(400).json({ codigo: 400, estado: "La fecha es requerida", datos: null });
         }
 
+        // Filtro opcional por sede (el médico puede atender en más de una).
+        let filtroSede = "";
+        const parametros = [req.usuario.id, fecha];
+        if (id_sede) {
+            filtroSede = " AND a.id_sede = ?";
+            parametros.push(Number(id_sede));
+        }
+
+        // Se incluyen los datos del paciente necesarios para la pantalla del médico
+        // (edad calculada a partir de la fecha de nacimiento) y la sede de cada turno.
         const [rows] = await pool.query(
             `SELECT t.id, t.fecha, t.hora, t.estado, t.nota,
-                    u.nombre AS paciente_nombre, u.apellido AS paciente_apellido,
-                    e.descripcion AS especialidad, s.nombre AS sede
+                    t.id_paciente, u.nombre AS paciente_nombre, u.apellido AS paciente_apellido, u.dni AS paciente_dni,
+                    DATE_FORMAT(u.fecha_nacimiento, '%Y-%m-%d') AS paciente_fecha_nacimiento,
+                    TIMESTAMPDIFF(YEAR, u.fecha_nacimiento, CURDATE()) AS paciente_edad,
+                    a.id_especialidad, e.descripcion AS especialidad, a.id_sede, s.nombre AS sede
              FROM turno t
              JOIN agenda a ON a.id = t.id_agenda
              JOIN usuario u ON u.id = t.id_paciente
              JOIN especialidad e ON e.id = a.id_especialidad
              JOIN sede s ON s.id = a.id_sede
-             WHERE a.id_medico = ? AND t.fecha = ?
+             WHERE a.id_medico = ? AND t.fecha = ?${filtroSede}
              ORDER BY t.hora ASC`,
-            [req.usuario.id, fecha]
+            parametros
         );
 
         return res.json({ codigo: 200, estado: "ok", datos: rows });
