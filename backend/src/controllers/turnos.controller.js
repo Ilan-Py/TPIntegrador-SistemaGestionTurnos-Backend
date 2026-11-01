@@ -349,9 +349,9 @@ const turnosSede = async (req, res) => {
 
         const [rows] = await pool.query(
             `SELECT t.id, t.fecha, t.hora, t.estado, t.nota,
-                    p.nombre AS paciente_nombre, p.apellido AS paciente_apellido,
-                    m.nombre AS medico_nombre, m.apellido AS medico_apellido,
-                    e.descripcion AS especialidad
+                    t.id_paciente, p.nombre AS paciente_nombre, p.apellido AS paciente_apellido, p.dni AS paciente_dni,
+                    a.id_medico, m.nombre AS medico_nombre, m.apellido AS medico_apellido,
+                    a.id_especialidad, e.descripcion AS especialidad
              FROM turno t
              JOIN agenda a ON a.id = t.id_agenda
              JOIN usuario p ON p.id = t.id_paciente

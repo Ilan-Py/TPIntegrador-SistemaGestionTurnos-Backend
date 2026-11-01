@@ -1126,7 +1126,7 @@
                 }
               ]
             },
-            "description": "Lista los turnos de la sede del operador para una fecha.\n\nRol requerido: operador, administrador\nQuery params: fecha (requerido, YYYY-MM-DD)"
+            "description": "Lista los turnos de la sede del operador para una fecha.\n\nRol requerido: operador, administrador\nQuery params: fecha (requerido, YYYY-MM-DD)\nIncluye id_medico, id_paciente, paciente_dni e id_especialidad de cada turno."
           },
           "response": []
         },

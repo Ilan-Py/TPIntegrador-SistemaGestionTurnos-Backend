@@ -139,7 +139,7 @@ Servidor en `http://localhost:4000`
 | PATCH | /turnos/:id/atender | Marcar turno como atendido | medico |
 | GET | /turnos/mis-turnos | Turnos propios del paciente, ordenados del más próximo al menos próximo | paciente |
 | GET | /turnos/medico | Turnos del médico para una fecha (`fecha`, `id_sede` opcional), con edad del paciente | medico |
-| GET | /turnos/sede | Turnos de la sede del operador para una fecha | operador, administrador |
+| GET | /turnos/sede | Turnos de la sede del operador para una fecha (incluye `id_medico`, `id_paciente` y DNI del paciente) | operador, administrador |
 | POST | /historial/:id | Registrar historial clínico de un turno atendido | medico |
 | GET | /historial/:id_paciente | Historial clínico de un paciente (propio para el paciente, solo lo atendido para el médico) | paciente, medico |
 | GET | /notificaciones | Notificaciones propias del usuario, de más reciente a más antigua | Token |
@@ -173,6 +173,7 @@ Agregados según la sección "Sugerencias de cambios en el backend" del enunciad
 | PUT | /auth/perfil | El paciente actualiza email, contraseña (hasheada), teléfono y cobertura; cualquier otro campo devuelve 400 | paciente |
 | GET | /auth/perfil | Para el médico incluye `especialidades: [{ id, descripcion }]` | Token |
 | GET | /turnos/medico | Agrega `id_paciente`, `paciente_dni`, `paciente_fecha_nacimiento`, `paciente_edad`, `id_sede`, `id_especialidad` y el filtro opcional `id_sede` | medico |
+| GET | /turnos/sede | Agrega `id_medico`, `id_paciente`, `paciente_dni` e `id_especialidad`, para que el operador vea los turnos de un médico | operador, administrador |
 
 **Duración del turno:** cada turno dura 30 minutos (`DURACION_TURNO_MINUTOS` en `src/utils/horarios.js`). Los horarios empiezan en la hora de entrada de cada rango de agenda, cada 30 minutos, y el turno tiene que terminar antes de la hora de salida (por ejemplo, 09:00 a 10:30 ofrece 09:00, 09:30 y 10:00). `GET /disponibilidad/horarios` y `POST /turnos/altaTurno` usan la misma regla.
 
