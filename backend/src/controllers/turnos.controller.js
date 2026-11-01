@@ -45,6 +45,11 @@ const darAltaTurno = async (req, res) => {
             return res.status(400).json({ codigo: 400, estado: "La nota es obligatoria", datos: null });
         }
 
+        // turno.nota es varchar(55) en la base.
+        if (nota.trim().length > 55) {
+            return res.status(400).json({ codigo: 400, estado: "La nota no puede superar los 55 caracteres", datos: null });
+        }
+
         if (!esHoraValida(hora)) {
             return res.status(400).json({ codigo: 400, estado: "La hora debe tener formato HH:MM", datos: null });
         }

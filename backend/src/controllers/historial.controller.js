@@ -10,6 +10,13 @@ const registrarHistorial = async (req, res) => {
             return res.status(400).json({ codigo: 400, estado: "El diagnóstico es requerido", datos: null });
         }
 
+        // Las tres columnas son varchar(255) en la base.
+        for (const [campo, valor] of [["diagnóstico", diagnostico], ["tratamiento", tratamiento], ["observaciones", observaciones]]) {
+            if (valor && String(valor).length > 255) {
+                return res.status(400).json({ codigo: 400, estado: `El campo ${campo} no puede superar los 255 caracteres`, datos: null });
+            }
+        }
+
         const [turnoExiste] = await pool.query(
             "SELECT t.*, a.id_medico FROM turno t INNER JOIN agenda a ON a.id = t.id_agenda WHERE t.id = ? AND t.estado = 'atendido'",
             [id]
