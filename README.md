@@ -1,128 +1,207 @@
-# TPIntegrador — Sistema de Gestión de Turnos Médicos
+# Backend — Sistema de Gestión de Turnos Médicos
 
-Trabajo Práctico Integrador de Programación 2 — IES Santa Fe — 2026.
-
-Sistema web para la gestión de turnos médicos, usuarios y agendas de una clínica. Desarrollo dividido en dos etapas: backend con Node.js y frontend con Angular 21.
-
-**Desarrollado por Ilan Pitashny y Aaron Juarez.**
+Backend del TP Integrador de Programación 2. Node.js + Express + MySQL.
 
 ---
 
-## Organización del repositorio
+## Estructura
 
 ```
-├── backend/    <- API REST — Node.js + Express + MySQL
-└── README.md
+├── scripts/
+│   ├── clinica_ampliada.sql
+│   └── usuarios_prueba.sql
+├── postman/
+│   ├── backend-semana-1.json
+│   ├── backend-semana-2.json
+│   ├── backend-semana-3.json
+│   └── backend-semana-4.json      <- colección completa (incluye los cambios para el frontend)
+├── src/
+│   ├── controllers/
+│   │   ├── auth.controller.js
+│   │   ├── sede.controller.js
+│   │   ├── cobertura.controller.js
+│   │   ├── especialidad.controller.js
+│   │   ├── agendas.controller.js
+│   │   ├── turnos.controller.js
+│   │   ├── historial.controller.js
+│   │   ├── notificaciones.controller.js
+│   │   ├── usuario.controller.js
+│   │   ├── logsAuditoria.controller.js
+│   │   ├── reportesYEstadisticas.controller.js
+│   │   ├── medicos.controller.js
+│   │   ├── disponibilidad.controller.js
+│   │   └── pacientes.controller.js
+│   ├── database/
+│   │   └── database.js
+│   ├── middlewares/
+│   │   └── auth.middleware.js
+│   ├── routes/
+│   │   ├── auth.routes.js
+│   │   ├── sede.routes.js
+│   │   ├── cobertura.routes.js
+│   │   ├── especialidad.routes.js
+│   │   ├── agendas.routes.js
+│   │   ├── turnos.routes.js
+│   │   ├── historial.routes.js
+│   │   ├── notificaciones.routes.js
+│   │   ├── usuario.routes.js
+│   │   ├── log.routes.js
+│   │   ├── reportesYEstadisticas.routes.js
+│   │   ├── medicos.routes.js
+│   │   ├── disponibilidad.routes.js
+│   │   └── pacientes.routes.js
+│   ├── utils/
+│   │   └── horarios.js            <- duración del turno y cálculo de horarios
+│   ├── app.js
+│   └── index.js
+├── .env.example
+├── .gitignore
+└── package.json
 ```
 
-El frontend (Angular 21 + Angular Material) está en un repositorio aparte: **TPIntegrador-SistemaGestionTurnos-Frontend**.
+---
 
-La carpeta `backend/` tiene su propio README con instrucciones y la lista completa de endpoints.
+## Instrucciones para ejecutar
+
+### 1 — Base de datos
+
+- Encender XAMPP
+- Importar `scripts/clinica_ampliada.sql` en phpMyAdmin
+- Importar `scripts/usuarios_prueba.sql` en phpMyAdmin
+
+### 2 — Variables de entorno
+
+Crear `.env` en la raíz del repositorio copiando `.env.example`:
+
+```
+HOST=localhost
+DATABASE=clinica
+USER=root
+PASSWORD=
+JWT_SECRET=ClaveSecretaTP2026
+JWT_EXPIRES_IN=8h
+PORT=4000
+```
+
+### 3 — Instalar y correr
+
+```bash
+npm install
+npm run dev
+```
+
+Servidor en `http://localhost:4000`
 
 ---
 
-## Stack tecnológico
+## Endpoints
 
-**Backend**
-- Node.js + Express
-- MySQL / MariaDB
-- JWT — autenticación
-- bcrypt — hash de contraseñas
+### Semana 1 — Autenticación
 
-**Frontend** *(repositorio aparte)*
-- Angular 21
-- Angular Material
+| Método | Ruta | Descripción | Auth |
+|--------|------|-------------|------|
+| GET | /health | Health check | No |
+| GET | /auth/coberturas | Coberturas disponibles para registro | No |
+| POST | /auth/registro | Registro de paciente (teléfono opcional) | No |
+| POST | /auth/login | Login, devuelve JWT | No |
+| GET | /auth/perfil | Perfil del usuario logueado (el médico recibe también sus especialidades) | Token |
+| PUT | /auth/perfil | El paciente modifica email, contraseña, teléfono y cobertura | paciente |
+
+### Semana 2 — CRUD de entidades base y agenda
+
+| Método | Ruta | Descripción | Rol |
+|--------|------|-------------|-----|
+| GET | /sedes | Listar sedes | cualquier usuario con sesión |
+| POST | /sedes | Crear sede | administrador |
+| PUT | /sedes/:id | Modificar sede | administrador |
+| DELETE | /sedes/:id | Eliminar sede | administrador |
+| GET | /especialidades | Listar especialidades | cualquier usuario con sesión |
+| POST | /especialidades | Crear especialidad | administrador |
+| PUT | /especialidades/:id | Modificar especialidad | administrador |
+| DELETE | /especialidades/:id | Eliminar especialidad (no si tiene médicos o agenda) | administrador |
+| GET | /coberturas/public | Listar coberturas sin auth | No |
+| GET | /coberturas | Listar coberturas | administrador |
+| POST | /coberturas | Crear cobertura | administrador |
+| PUT | /coberturas/:id | Modificar cobertura | administrador |
+| DELETE | /coberturas/:id | Eliminar cobertura (no si tiene usuarios o turnos) | administrador |
+| GET | /agendas | Listar agenda (filtrable por medico, sede, fecha) | medico, operador, administrador |
+| POST | /agendas | Crear rango horario de agenda | medico, operador, administrador |
+| PUT | /agendas/:id | Modificar rango horario (no puede dejar turnos confirmados afuera) | medico, operador, administrador |
+| DELETE | /agendas/:id | Eliminar rango horario (no si tiene turnos) | medico, operador, administrador |
+
+### Semana 3 — Turnos, historial clínico y notificaciones
+
+| Método | Ruta | Descripción | Rol |
+|--------|------|-------------|-----|
+| POST | /turnos/altaTurno | Solicitar turno (paciente, o operador en su sede en representación del paciente) | paciente, operador |
+| PATCH | /turnos/bajaTurno/:id | Cancelar turno: el paciente los propios, el médico los propios en cualquier sede, el operador los de su sede | paciente, operador, medico |
+| PATCH | /turnos/:id/atender | Marcar turno como atendido | medico |
+| GET | /turnos/mis-turnos | Turnos propios del paciente, ordenados del más próximo al menos próximo | paciente |
+| GET | /turnos/medico | Turnos del médico para una fecha (`fecha`, `id_sede` opcional), con edad del paciente | medico |
+| GET | /turnos/sede | Turnos de la sede del operador para una fecha (incluye `id_medico`, `id_paciente` y DNI del paciente) | operador, administrador |
+| POST | /historial/:id | Registrar historial clínico de un turno atendido | medico |
+| GET | /historial/:id_paciente | Historial clínico de un paciente (propio para el paciente, solo lo atendido para el médico) | paciente, medico |
+| GET | /notificaciones | Notificaciones propias del usuario, de más reciente a más antigua | Token |
+| PATCH | /notificaciones/:id/leer | Marcar una notificación propia como leída | Token |
+
+### Semana 4 — Usuarios, auditoría y reportes
+
+| Método | Ruta | Descripción | Rol |
+|--------|------|-------------|-----|
+| GET | /usuarios | Listado paginado con filtros por nombre, apellido, rol y sede | administrador |
+| POST | /usuarios | Alta de operador, médico (con especialidades) o administrador | administrador |
+| PUT | /usuarios/:id | Edición de cualquier usuario | administrador |
+| GET | /logs/auditoria | Auditoría paginada, filtros opcionales: usuario, entidad, fechaDesde, fechaHasta | administrador |
+| POST | /logs/listar | Auditoría filtrada (requiere usuario, entidad y rango de fechas en el body) | administrador |
+| POST | /reportesYEstadisticas/especialidad | Turnos de una especialidad en un rango de fechas | administrador |
+| POST | /reportesYEstadisticas/sede | Turnos de una sede en un rango de fechas | administrador |
+| POST | /reportesYEstadisticas/ranking-medicos | Ranking de médicos por turnos atendidos | administrador |
+| POST | /reportesYEstadisticas/tasa-cancelacion | Tasa de cancelación del período (porcentaje) | administrador |
+
+### Cambios para el frontend
+
+Agregados según la sección "Sugerencias de cambios en el backend" del enunciado del frontend. Documentados en la carpeta **CAMBIOS PARA EL FRONTEND** de `postman/backend-semana-4.json`.
+
+| Método | Ruta | Descripción | Rol |
+|--------|------|-------------|-----|
+| GET | /sedes, /especialidades | Los listados pasan a estar disponibles para cualquier usuario con sesión (alta, modificación y baja siguen siendo del administrador) | Token |
+| GET | /medicos | Médicos con sus especialidades, sin datos personales. Filtros opcionales: `id_especialidad`, `id_sede`, `con_agenda=true` | Token |
+| GET | /disponibilidad/fechas | Fechas con agenda y horarios libres para `id_medico`, `id_especialidad`, `id_sede` | paciente, operador |
+| GET | /disponibilidad/horarios | Horarios libres de una `fecha` para `id_medico`, `id_especialidad`, `id_sede` | paciente, operador |
+| GET | /pacientes | Búsqueda de pacientes por `dni` (empieza con) o `apellido` (contiene), hasta 20 resultados | operador, medico, administrador |
+| PUT | /auth/perfil | El paciente actualiza email, contraseña (hasheada), teléfono y cobertura; cualquier otro campo devuelve 400 | paciente |
+| GET | /auth/perfil | Para el médico incluye `especialidades: [{ id, descripcion }]` | Token |
+| GET | /turnos/medico | Agrega `id_paciente`, `paciente_dni`, `paciente_fecha_nacimiento`, `paciente_edad`, `id_sede`, `id_especialidad` y el filtro opcional `id_sede` | medico |
+| GET | /turnos/sede | Agrega `id_medico`, `id_paciente`, `paciente_dni` e `id_especialidad`, para que el operador vea los turnos de un médico | operador, administrador |
+
+**Duración del turno:** cada turno dura 30 minutos (`DURACION_TURNO_MINUTOS` en `src/utils/horarios.js`). Los horarios empiezan en la hora de entrada de cada rango de agenda, cada 30 minutos, y el turno tiene que terminar antes de la hora de salida (por ejemplo, 09:00 a 10:30 ofrece 09:00, 09:30 y 10:00). `GET /disponibilidad/horarios` y `POST /turnos/altaTurno` usan la misma regla.
+
+**Otras reglas agregadas:**
+- El operador solo puede asignar turnos en su propia sede (403).
+- El médico solo puede cancelar sus propios turnos, en cualquiera de las sedes donde atiende.
+- No se puede eliminar un rango de agenda con turnos, ni modificarlo dejando turnos confirmados fuera del horario o cambiándole fecha, médico, especialidad o sede.
+
+### Formato de respuesta uniforme
+
+```json
+{
+  "codigo": 200,
+  "estado": "ok",
+  "datos": { }
+}
+```
 
 ---
 
-## Changelog
+## Credenciales de prueba
 
-### [Frontend] — Cambios en el backend para el frontend
+Importar `scripts/usuarios_prueba.sql` en phpMyAdmin luego de importar la base principal.
 
-#### Agregado
-- `GET /medicos` — médicos con sus especialidades, sin datos personales; filtros por especialidad, sede y agenda futura
-- `GET /disponibilidad/fechas` y `GET /disponibilidad/horarios` — fechas y horarios libres para pedir turno (paciente y operador)
-- `GET /pacientes` — búsqueda de pacientes por DNI o apellido (operador, médico y administrador)
-- `PUT /auth/perfil` — el paciente modifica email, contraseña, teléfono y cobertura
-- Duración de turno de 30 minutos (`src/utils/horarios.js`), compartida por la disponibilidad y el alta de turno
-- Carpeta "CAMBIOS PARA EL FRONTEND" en `backend/postman/backend-semana-4.json`
+| Rol | DNI | Contraseña |
+|-----|-----|------------|
+| administrador | 00000001 | password123 |
+| medico | 00000002 | password123 |
+| operador | 00000003 | password123 |
+| paciente | 00000004 | password123 |
 
-#### Modificado
-- `GET /sedes` y `GET /especialidades` disponibles para cualquier usuario con sesión
-- `GET /auth/perfil` incluye las especialidades del médico
-- `GET /turnos/medico` incluye edad y datos del paciente, sede y especialidad; filtro opcional por sede
-- `POST /turnos/altaTurno` valida la grilla de 30 minutos y que el operador asigne turnos solo en su sede
-
-#### Corregido
-- Cancelar y atender turno devolvían 500 y no generaban la notificación
-- El médico podía cancelar turnos de otro médico de su sede
-- Bajas con dependencias (especialidad en agenda, cobertura en turnos, agenda con turnos) devolvían 500
-- Se podía modificar un rango de agenda dejando turnos confirmados afuera
-- Registro: teléfono opcional y validación de longitudes según la base
-- Reportes: el rango de fechas se corría un día y la tasa de cancelación estaba invertida
-- Rutas de reportes y auditoría mal escritas en la colección de Postman
-
-### [Semana 4] — Backend: Reportes, documentación y cierre
-
-#### Agregado
-- Endpoints de reportes y estadísticas `POST /reportesYEstadisticas/...` (especialidad, sede, ranking-medicos, tasa-cancelacion) — solo rol `administrador`
-  - Consulta de turnos por especialidad dentro de un rango de fechas
-  - Validación de formato de fechas, rango válido e id_especialidad
-  - Devuelve cantidad total y listado de turnos
-- Historial clínico separado como paso posterior a la atención
-  - `POST /historial/:id` — el médico registra diagnóstico, tratamiento y observaciones luego de atender el turno
-  - Validación de turno atendido, pertenencia al médico y no duplicación
-- Colección Postman completa con todos los endpoints y descripciones `backend/postman/backend-semana-4.json`
-
-#### Modificado
-- `PATCH /turnos/bajaTurno/:id` — método cambiado de `DELETE` a `PATCH` ya que la operación modifica el estado del turno a cancelado sin eliminar el registro
-
-
-### [Semana 3] — Backend: Turnos, historial clínico y notificaciones
-#### Agregado
-- Endpoint de alta de turno para paciente (u operador en su representación)
-  - Validación de disponibilidad contra la agenda del médico (horario y superposición con turnos confirmados)
-  - Cobertura del turno tomada automáticamente del paciente, sin poder pisarse desde el body
-- Endpoint de cancelación de turno propio (rol `paciente`) o de la sede (roles `operador`, `medico`)
-- Endpoint de atención de turno por parte del médico, con carga asociada del historial clínico
-  - El médico solo puede atender sus propios turnos confirmados
-- Endpoint de consulta de historial clínico
-  - El paciente ve la totalidad de su propio historial
-  - El médico ve únicamente los registros de los turnos que él mismo atendió
-- Sistema de notificaciones internas, generadas automáticamente ante alta, cancelación y atención de un turno
-  - Endpoint de listado de notificaciones propias, de más reciente a más antigua
-  - Endpoint para marcar una notificación propia como leída
-- Listados de turnos: por paciente (`mis-turnos`), por médico y fecha, y por sede y fecha (para el operador)
-- Colección Postman `backend/postman/backend-semana-3.json`
-
-### [Semana 2] — Backend: CRUD de sedes, especialidades, coberturas y agenda
-#### Agregado
-- CRUD completo de sedes — solo rol `administrador`
-  - Validación antes de eliminar: no puede tener usuarios ni agenda asociada
-- CRUD completo de especialidades — solo rol `administrador`
-  - Validación antes de eliminar: no puede tener médicos asociados en `medico_especialidad`
-- CRUD completo de coberturas — solo rol `administrador`
-  - Validación antes de eliminar: no puede tener usuarios asociados
-  - Endpoint público `GET /coberturas/public` reutilizable desde el registro de pacientes
-- CRUD completo de agenda médica — roles `medico`, `operador`, `administrador`
-  - El médico solo puede gestionar su propia agenda
-  - El operador puede gestionar la agenda de cualquier médico y sede
-  - El paciente no tiene acceso
-  - Listado filtrable por médico, sede y fecha
-- Script de usuarios de prueba `backend/scripts/usuarios_prueba.sql`
-- Colección Postman `backend/postman/backend-semana-2.json`
-
-### [Semana 1] — Backend: Setup y autenticación
-#### Agregado
-- Inicialización del proyecto Node.js + Express
-- Conexión a MySQL con pool de conexiones
-- Variables de entorno con dotenv
-- Middleware `verificarToken` — valida JWT en requests protegidos
-- Middleware `verificarRol` — valida el rol del usuario
-- `GET /health` — health check del servidor
-- `GET /auth/coberturas` — lista coberturas para el registro
-- `POST /auth/registro` — registro de paciente con bcrypt
-- `POST /auth/login` — login por DNI, devuelve JWT
-- `GET /auth/perfil` — datos del usuario logueado (protegido)
-- Script de base de datos `backend/scripts/clinica_ampliada.sql`
-- Colección Postman `backend/postman/backend-semana-1.json`
+La colección completa está en `postman/backend-semana-4.json`. La colección `postman/backend-semana-3.json` incluye casos de prueba de: un turno rechazado por horario no disponible, un turno cancelado que genera notificación, y un turno atendido con su historial clínico asociado.
