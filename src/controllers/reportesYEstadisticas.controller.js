@@ -16,6 +16,141 @@ const formatearFecha = (fechas) => {
     return fecha;
 };
 
+const fechaISOValida = (valor) => {
+    if (typeof valor !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(valor)) {
+        return false;
+    }
+
+    const [anio, mes, dia] = valor.split("-").map(Number);
+    const fecha = new Date(anio, mes - 1, dia);
+    return fecha.getFullYear() === anio &&
+        fecha.getMonth() === mes - 1 &&
+        fecha.getDate() === dia;
+};
+
+const dashboardReportes = async (req, res) => {
+    try {
+        const { desde, hasta } = req.body || {};
+        if (!fechaISOValida(desde) || !fechaISOValida(hasta)) {
+            return res.status(400).json({
+                codigo: 400,
+                estado: "Las fechas deben tener formato válido YYYY-MM-DD",
+                datos: null
+            });
+        }
+        if (desde > hasta) {
+            return res.status(400).json({
+                codigo: 400,
+                estado: "La fecha desde debe ser menor o igual a la fecha hasta",
+                datos: null
+            });
+        }
+
+        const hoy = new Date();
+        const hoyISO = [
+            hoy.getFullYear(),
+            String(hoy.getMonth() + 1).padStart(2, "0"),
+            String(hoy.getDate()).padStart(2, "0")
+        ].join("-");
+        if (desde > hoyISO || hasta > hoyISO) {
+            return res.status(400).json({
+                codigo: 400,
+                estado: "El rango de fechas no puede incluir días futuros",
+                datos: null
+            });
+        }
+
+        const rango = [desde, hasta];
+        const [
+            [porEspecialidad],
+            [porSede],
+            [rankingMedicos],
+            [tasas]
+        ] = await Promise.all([
+            pool.query(
+                `SELECT e.id, e.descripcion AS nombre, COUNT(t.id) AS cantidad_turnos
+                 FROM especialidad e
+                 LEFT JOIN agenda a ON a.id_especialidad = e.id
+                 LEFT JOIN turno t ON t.id_agenda = a.id
+                    AND t.fecha BETWEEN ? AND ?
+                 GROUP BY e.id, e.descripcion
+                 ORDER BY cantidad_turnos DESC, e.descripcion ASC`,
+                rango
+            ),
+            pool.query(
+                `SELECT s.id, s.nombre, COUNT(t.id) AS cantidad_turnos
+                 FROM sede s
+                 LEFT JOIN agenda a ON a.id_sede = s.id
+                 LEFT JOIN turno t ON t.id_agenda = a.id
+                    AND t.fecha BETWEEN ? AND ?
+                 GROUP BY s.id, s.nombre
+                 ORDER BY cantidad_turnos DESC, s.nombre ASC`,
+                rango
+            ),
+            pool.query(
+                `SELECT u.id AS id_medico, u.nombre, u.apellido,
+                        COUNT(CASE WHEN t.estado = 'atendido' THEN t.id END) AS cantidad_turnos
+                 FROM usuario u
+                 LEFT JOIN agenda a ON a.id_medico = u.id
+                 LEFT JOIN turno t ON t.id_agenda = a.id
+                    AND t.fecha BETWEEN ? AND ?
+                 WHERE u.rol = 'medico'
+                 GROUP BY u.id, u.nombre, u.apellido
+                 ORDER BY cantidad_turnos DESC, u.apellido ASC, u.nombre ASC`,
+                rango
+            ),
+            pool.query(
+                `SELECT
+                    SUM(CASE WHEN t.estado = 'cancelado' THEN 1 ELSE 0 END) AS total_cancelados,
+                    SUM(CASE WHEN t.estado IN ('confirmado', 'atendido') THEN 1 ELSE 0 END) AS total_efectivos,
+                    SUM(CASE WHEN t.estado IN ('confirmado', 'atendido', 'cancelado') THEN 1 ELSE 0 END) AS total_turnos
+                 FROM turno t
+                 WHERE t.fecha BETWEEN ? AND ?`,
+                rango
+            )
+        ]);
+
+        const totalCancelados = Number(tasas[0]?.total_cancelados || 0);
+        const totalEfectivos = Number(tasas[0]?.total_efectivos || 0);
+        const totalTurnos = Number(tasas[0]?.total_turnos || 0);
+        const dashboard = {
+            porEspecialidad: porEspecialidad.map(item => ({
+                ...item,
+                cantidad_turnos: Number(item.cantidad_turnos)
+            })),
+            porSede: porSede.map(item => ({
+                ...item,
+                cantidad_turnos: Number(item.cantidad_turnos)
+            })),
+            rankingMedicos: rankingMedicos.map(item => ({
+                ...item,
+                cantidad_turnos: Number(item.cantidad_turnos)
+            })),
+            tasaCancelacion: {
+                total_cancelados: totalCancelados,
+                total_efectivos: totalEfectivos,
+                total_turnos: totalTurnos,
+                porcentaje_cancelacion: totalTurnos
+                    ? Number(((totalCancelados / totalTurnos) * 100).toFixed(2))
+                    : 0
+            }
+        };
+
+        return res.status(200).json({
+            codigo: 200,
+            estado: "Reportes y estadísticas obtenidos correctamente",
+            datos: dashboard
+        });
+    } catch (error) {
+        console.error("Error al obtener el dashboard de reportes:", error);
+        return res.status(500).json({
+            codigo: 500,
+            estado: "Error al obtener los reportes y estadísticas",
+            datos: null
+        });
+    }
+};
+
 //Muestra de turnos por especialidad - Administrador
 const turnosPorEspecialidad = async (req, res) =>  {
 
@@ -420,4 +555,10 @@ return res.status(200).json({
     }
 };
 
-module.exports = { turnosPorEspecialidad, turnosPorSede, rankingMedicos, tasaDeCancelacion };
+module.exports = {
+    dashboardReportes,
+    turnosPorEspecialidad,
+    turnosPorSede,
+    rankingMedicos,
+    tasaDeCancelacion
+};
