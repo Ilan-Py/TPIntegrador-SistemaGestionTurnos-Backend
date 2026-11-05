@@ -11,9 +11,9 @@ const { verificarToken, verificarRol } = require("../middlewares/auth.middleware
 const router = Router();
 
 router.post("/dashboard", verificarToken, verificarRol("administrador"), dashboardReportes);
-router.post("/especialidad",    verificarToken, turnosPorEspecialidad);
-router.post("/sede",            verificarToken, turnosPorSede);
-router.post("/ranking-medicos", verificarToken, rankingMedicos);
-router.post("/tasa-cancelacion", verificarToken, tasaDeCancelacion);
+router.post("/especialidad",    verificarToken, verificarRol("administrador"), turnosPorEspecialidad);
+router.post("/sede",            verificarToken, verificarRol("administrador"), turnosPorSede);
+router.post("/ranking-medicos", verificarToken, verificarRol("administrador"), rankingMedicos);
+router.post("/tasa-cancelacion", verificarToken, verificarRol("administrador"), tasaDeCancelacion);
 
 module.exports = router;

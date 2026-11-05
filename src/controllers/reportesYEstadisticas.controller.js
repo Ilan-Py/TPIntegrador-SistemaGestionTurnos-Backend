@@ -1,5 +1,8 @@
 const pool = require("../database/database");
 
+const esAdministrador = (usuario) =>
+    usuario?.rol === "admin" || usuario?.rol === "administrador";
+
 // Interpreta "YYYY-MM-DD" como fecha local. new Date("YYYY-MM-DD") la toma en UTC y,
 // en Argentina (UTC-3), al pasarla a texto quedaba un día antes: el rango se corría un día.
 const formatearFecha = (fechas) => {
@@ -157,7 +160,7 @@ const turnosPorEspecialidad = async (req, res) =>  {
     try {
 
         //Si el rol distinto de Admin. error 403
-        if (req.usuario.rol !== "administrador") {
+        if (!esAdministrador(req.usuario)) {
                 return res.status(403).json ({
                     codigo: 403,
                     estado: "Solo el administrador puede acceder a los reportes y estadisticas",
@@ -246,7 +249,7 @@ const turnosPorEspecialidad = async (req, res) =>  {
 //Funcion para mostrar turnos por sede - Administrador
 const turnosPorSede = async (req, res) => {
     try {
-        if (req.usuario.rol !== "administrador") {
+        if (!esAdministrador(req.usuario)) {
             return res.status(403).json({
                 codigo: 403,
                 estado: "Solo el administrador puede acceder a los reportes y estadisticas",
@@ -328,7 +331,7 @@ const turnosPorSede = async (req, res) => {
 
 const rankingMedicos = async (req, res) => {
     try {
-        if (req.usuario.rol !== "administrador") {
+        if (!esAdministrador(req.usuario)) {
             return res.status(403).json({
                 codigo: 403,
                 estado: "Solo el administrador puede acceder a los reportes y estadisticas",
@@ -437,7 +440,7 @@ const rankingMedicos = async (req, res) => {
 
 const tasaDeCancelacion = async (req, res) => {
     try {
-        if (req.usuario.rol !== "administrador") {
+        if (!esAdministrador(req.usuario)) {
             return res.status(403).json({
                 codigo: 403,
                 estado: "Solo el administrador puede acceder a los reportes y estadisticas",
